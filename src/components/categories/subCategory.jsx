@@ -3,7 +3,7 @@ import React from 'react'
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
 const SubCategories = ({ item, isSelected, onPress }) => {
-    const obj = JSON.parse(item?.name);
+    const obj = item?.name ? JSON.parse(item.name) : {};
 
     const firstValue = obj[Object.keys(obj)[0]];
     return (
@@ -12,17 +12,20 @@ const SubCategories = ({ item, isSelected, onPress }) => {
             onPress={() => onPress(item)}
             style={[styles.pill, isSelected && styles.selectedPill, {
                 flexDirection: 'row',
-                alignItems: 'center'
+                alignItems: 'center',
+                borderBottomColor: isSelected ? '#0000ff' : '#FFFFFF',
+                borderBottomWidth: 1
             }]}
         >
             <Text style={[styles.pillText, isSelected && styles.selectedText]}>
                 {firstValue}
             </Text>
             {
-                typeof item?.childrenCategories != null && item?.childrenCategories?.length != 0 && (
+                // Show chevron when this item has nested children (handle both naming styles)
+                ((item?.childrenCategories && item.childrenCategories.length > 0) || (item?.children_categories && item.children_categories.length > 0)) && (
                     <FeatherIcon
                         name='chevron-down'
-                        color={isSelected ? '#FFFFFF' : '#0000ff'}
+                        color={isSelected ? '#0000ff' : '#000000'}
                         size={20}
                     />
                 )
@@ -38,18 +41,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         // borderRadius: 20,
         marginRight: 10,
-        borderBottomColor: '#0000ff',
-        borderBottomWidth: 1
+
     },
     selectedPill: {
         // backgroundColor: '#0000ff',
     },
     pillText: {
-        color: '#0000ff',
+        color: '#000000',
         fontFamily: "Jost_400Regular"
     },
     selectedText: {
-        color: '#ffffff',
+        color: '#0000ff',
     },
 });
 export default SubCategories

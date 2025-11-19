@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, SectionList } from 'react-native'
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ScrollView } from 'react-native'
 import Header from '../../components/header/Header'
 import { homeStyles } from './styles'
@@ -40,6 +40,9 @@ const Home = () => {
     const [selected, setSelected] = useState(null);
     const [categoriesLoaDING, setCategoriesLoading] = useState(false)
 
+    // currentChildren holds the list being shown in the subcategory row
+    const [currentChildren, setCurrentChildren] = useState([])
+
     const [optionData, setOptionData] = useState([])
     const [dishesListData, setDishListData] = useState([])
 
@@ -69,18 +72,28 @@ const Home = () => {
     }
 
 
-    const autoScrollIfNeeded = (index) => {
-        const thresholdIndex = categoriesData?.length - 3;
-
-        if (index >= thresholdIndex && flatListRef.current) {
-            flatListRef.current.scrollToIndex({
-                index: Math.min(index + 1, categoriesData?.length - 1),
+    const autoScrollCategories = (index) => {
+        const thresholdIndex = (categoriesData?.length ?? 0) - 3;
+        if (index >= thresholdIndex && categoriesRef.current && categoriesRef.current.scrollToIndex) {
+            categoriesRef.current.scrollToIndex({
+                index: Math.min(index + 1, Math.max(0, (categoriesData?.length ?? 1) - 1)),
                 animated: true,
             });
         }
     };
 
-    const flatListRef = useRef(null);
+    const autoScrollSubcategories = (index) => {
+        const thresholdIndex = (currentChildren?.length ?? 0) - 3;
+        if (index >= thresholdIndex && subcategoriesRef.current && subcategoriesRef.current.scrollToIndex) {
+            subcategoriesRef.current.scrollToIndex({
+                index: Math.min(index + 1, Math.max(0, (currentChildren?.length ?? 1) - 1)),
+                animated: true,
+            });
+        }
+    };
+
+    const categoriesRef = useRef(null);
+    const subcategoriesRef = useRef(null);
 
     useEffect(() => {
         fetchCategoryData()
@@ -106,13 +119,28 @@ const Home = () => {
             console.log(api_res, 'api response>>>>>')
 
 
-            if (api_res?.status == true) setCategoriesData(api_res?.data)
-            await fetchsubCategoryData(api_res?.data[0]?.id, _userData?.business)
-            // console.log()
-            const obj = JSON.parse(api_res?.data[0]?.name);
+            if (api_res?.status == true) {
+                setCategoriesData(api_res?.data)
+                // set default selected to first category
+                const firstCat = api_res?.data[0]
+                if (firstCat) {
+                    setSelected(firstCat)
+                    // set the current children for the first category (handle both keys)
+                    // const children = firstCat?.childrenCategories ?? firstCat?.children_categories ?? []
+                    const children = [
+                        { id: 189, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                        ...(firstCat?.childrenCategories ?? firstCat?.children_categories ?? [])
+                    ];
+                    setSelected({ id: 189, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" })
 
-            const firstValue = obj[Object.keys(obj)[0]];
-            setSelectedCategoryactive([firstValue])
+                    setCurrentChildren(children)
+                    await fetchsubCategoryData(firstCat.id, _userData?.business)
+
+                    const obj = firstCat?.name ? JSON.parse(firstCat.name) : {}
+                    const firstValue = obj[Object.keys(obj)[0]]
+                    setSelectedCategoryactive(firstValue)
+                }
+            }
             setCategoriesLoading(false)
         } catch (error) {
             console.log('catch error ', error)
@@ -155,8 +183,14 @@ const Home = () => {
         }
     }
 
-    useMemo(() => {
-        fetchsubCategoryData(selected?.id, state?.user_data?.business)
+    useEffect(() => {
+        if (selected?.id == 189) {
+            console.log(currentChildren, 'all data /////')
+            fetchsubCategoryData(currentChildren?.id, state?.user_data?.business)
+            return
+        }
+        // Whenever `selected` changes, fetch dishes for that category
+        if (selected?.id) fetchsubCategoryData(selected.id, state?.user_data?.business)
     }, [selected])
 
     // check box update data
@@ -198,15 +232,24 @@ const Home = () => {
                     ) : (
                         <FlatList
                             horizontal
-                            ref={flatListRef}
+                            ref={categoriesRef}
                             data={categoriesData}
                             renderItem={({ item, index }) => (
                                 <Categories
                                     item={item}
                                     isSelected={selected?.id == item?.id}
                                     onPress={() => {
-                                        setSelected(item);
-                                        autoScrollIfNeeded(index);
+                                        // select category and display its children
+                                        setSelected(item)
+                                        // const children = item?.childrenCategories ?? item?.children_categories ?? []
+                                        const children = [
+                                            { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                            ...(item?.childrenCategories ?? item?.children_categories ?? [])
+                                        ];
+
+                                        setCurrentChildren(children)
+                                        // auto scroll categories list when needed
+                                        autoScrollCategories(index)
                                     }}
                                 />
                             )}
@@ -223,15 +266,68 @@ const Home = () => {
                             !categoriesLoaDING && (
                                 <FlatList
                                     horizontal
-                                    ref={flatListRef}
-                                    data={categoriesData[0]?.childrenCategories}
+                                    ref={subcategoriesRef}
+                                    data={currentChildren}
                                     renderItem={({ item, index }) => (
                                         <SubCategories
                                             item={item}
                                             isSelected={selected?.id == item?.id}
                                             onPress={() => {
-                                                setSelected(item);
-                                                autoScrollIfNeeded(index);
+                                                // if this subcategory has deeper children, drill in
+                                                const children = [
+                                                    {
+                                                        "id": 2106,
+                                                        "parent_id": 887,
+                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
+                                                        "description": null,
+                                                        "is_img": null,
+                                                        "icon": null,
+                                                        "business": 33,
+                                                        "rank": 2,
+                                                        "status": "1",
+                                                        "children_categories": []
+                                                    },
+                                                    {
+                                                        "id": 2176,
+                                                        "parent_id": 887,
+                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
+                                                        "description": null,
+                                                        "is_img": null,
+                                                        "icon": null,
+                                                        "business": 33,
+                                                        "rank": 2,
+                                                        "status": "1",
+                                                        "children_categories": []
+                                                    },
+                                                    {
+                                                        "id": 206,
+                                                        "parent_id": 887,
+                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
+                                                        "description": null,
+                                                        "is_img": null,
+                                                        "icon": null,
+                                                        "business": 33,
+                                                        "rank": 2,
+                                                        "status": "1",
+                                                        "children_categories": []
+                                                    }
+                                                ]
+                                                // const children = [
+                                                //     { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                                //     ...(item?.childrenCategories ?? item?.children_categories ?? [])
+                                                // ];
+                                                const obj = item?.name ? JSON.parse(item.name) : {}
+                                                const firstValue = `  ->  ${obj[Object.keys(obj)[0]]}`
+                                                setSelectedCategoryactive(prev => [...prev, firstValue])
+                                                if (children && children.length > 0) {
+                                                    setCurrentChildren(children)
+                                                    setSelected(item)
+                                                    autoScrollSubcategories(index)
+                                                } else {
+                                                    // leaf subcategory: select and fetch dishes
+                                                    setSelected(item)
+                                                    autoScrollSubcategories(index)
+                                                }
                                             }}
                                         />
                                     )}
@@ -239,8 +335,6 @@ const Home = () => {
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={{
                                         paddingBottom: 10,
-                                        // borderBottomColor:'gray',
-                                        // borderBottomWidth:1.5
                                     }}
                                 />
                             )
@@ -276,17 +370,32 @@ const Home = () => {
                         ))
                     )
                     }
-                    <View>
+                    <View style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between'
+                    }}>
                         <Text style={{
                             color: '#0000ff',
                             fontFamily: "Jost_400Regular",
                             fontSize: 18,
                             fontWeight: '700'
                         }}>{
+
+
                                 !categoriesLoaDING && selectedCateActive
                                 // selected == null ? selectedCateActive : JSON.parse(selected?.name)[Object.keys(JSON.parse(selected?.name))[0]]
 
                             } </Text>
+                        <TouchableOpacity >
+                            <Text style={{
+                                backgroundColor: '#0000ff',
+                                padding: 4,
+                                paddingHorizontal: 12,
+                                borderRadius: 5,
+                                color: '#FFFFFF'
+                            }}>Back</Text>
+                        </TouchableOpacity>
                     </View>
                     {
                         !loading && (
