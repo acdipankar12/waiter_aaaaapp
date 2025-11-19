@@ -12,6 +12,8 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
+    const [checkedChoices, setCheckedChoices] = useState({}); // map of choiceId -> bool (checked)
+    const [selectedChoiceIds, setSelectedChoiceIds] = useState([]); // array of selected choice ids
     const { setTempFood, tempFood } = useContext(UserContext)
 
     const addTempFood = (foodItem) => {
@@ -22,6 +24,25 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
     useEffect(() => {
         console.log(selectedPrice, 'pice?????????????')
     }, [selectedPrice])
+
+    // Initialize checked state from incoming food data (choices with qty > 0 are considered checked)
+    useEffect(() => {
+        const initial = {};
+        // food can be an array of sections or a single section object depending on how it's passed
+        if (Array.isArray(food)) {
+            food.forEach(section => {
+                section?.choices?.forEach(choice => {
+                    if (choice?.qty && Number(choice.qty) > 0) initial[choice.id] = true;
+                });
+            });
+        } else if (food && Array.isArray(food.choices)) {
+            // single section object with choices
+            food.choices.forEach(choice => {
+                if (choice?.qty && Number(choice.qty) > 0) initial[choice.id] = true;
+            });
+        }
+        setCheckedChoices(initial);
+    }, [food]);
 
     const toggleRice = (name) => {
         setSelectedRices((prev) =>
@@ -104,6 +125,38 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
         // console.log(_selectedChoice, choice_main, 'increerererere')
     }
 
+    const toggleChoiceSelect = (choice) => {
+        setCheckedChoices(prev => {
+            const wasChecked = !!prev[choice.id];
+            const nowChecked = !wasChecked;
+
+            // Update qty in option data: when checked, ensure qty at least 1; when unchecked, reset to 0
+            if (nowChecked) {
+                updateOptionData(prevData =>
+                    prevData.map(item => ({
+                        ...item,
+                        choices: item.choices.map(c =>
+                            c.id === choice.id ? { ...c, qty: (c.qty && c.qty > 0) ? c.qty : 1 } : c
+                        )
+                    }))
+                );
+                setSelectedChoiceIds(prev => Array.from(new Set([...prev, choice.id])));
+            } else {
+                updateOptionData(prevData =>
+                    prevData.map(item => ({
+                        ...item,
+                        choices: item.choices.map(c =>
+                            c.id === choice.id ? { ...c, qty: 0 } : c
+                        )
+                    }))
+                );
+                setSelectedChoiceIds(prev => prev.filter(id => id !== choice.id));
+            }
+
+            return { ...prev, [choice.id]: nowChecked };
+        });
+    }
+
     function food_item_choice_update(_cID, qty, type) {
 
 
@@ -145,51 +198,43 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                                                                 alignItems: 'center',
                                                                 flexDirection: 'row'
                                                             }}>
-                                                                {
-                                                                    choiceItem?.type == '1' && (
-                                                                        <IconFontisto
-
-                                                                            name='checkbox-passive'
-
-                                                                        />
-                                                                    )
-                                                                }
+                                                                {/* For type 1 show a tappable Fontisto checkbox (passive/active). For other types don't render this icon here. */}
+                                                                {Number(choiceItem?.type) === 1 ? (
+                                                                    <TouchableOpacity onPress={() => toggleChoiceSelect(choiceItem)}>
+                                                                        {selectedChoiceIds.includes(choiceItem?.id) ? (
+                                                                            <IconFontisto name="checkbox-active" size={16} color="#000" />
+                                                                        ) : (
+                                                                            <IconFontisto name="checkbox-passive" size={16} color="#000" />
+                                                                        )}
+                                                                    </TouchableOpacity>
+                                                                ) : null}
 
                                                                 <Text style={addFoodStyles?.checkboxname2}> {choiceItem?.choice_name} {`($${choiceItem?.price})`}</Text>
 
-
                                                             </View>
 
-                                                            {
-                                                                choiceItem?.type == 1 ? (
-                                                                    <IncrementItem
-                                                                        item={choiceItem}
-
-                                                                        changeFunction={updateChoiceData}
-                                                                    />
-                                                                )
-                                                                    :
-                                                                    (
-                                                                        <View style={addFoodStyles.spicyCheckBox}>
-
-                                                                            <View key={_index} style={addFoodStyles.checkBoxitems}>
-                                                                                <TouchableOpacity
-                                                                                    style={
-                                                                                        // spiceLevel === level ? 
-                                                                                        // addFoodStyles.checkboxselect : 
-                                                                                        addFoodStyles.checkbox}
-                                                                                    onPress={() => setSpiceLevel(level)}
-                                                                                >
-                                                                                    {/* {spiceLevel === level &&  */}
-                                                                                    <IconAntDesign name="check" size={14} color="#fff" />
-                                                                                    {/* } */}
-                                                                                </TouchableOpacity>
-                                                                                {/* <Text style={addFoodStyles.checkboxname}>{level}</Text> */}
-                                                                            </View>
-
-                                                                        </View>
-                                                                    )
-                                                            }
+                                                            {/* Show increment controls only when this is a type-1 choice AND the user has selected (toggled) it. */}
+                                                            {Number(choiceItem?.type) === 1 && selectedChoiceIds.includes(choiceItem?.id) ? (
+                                                                <IncrementItem
+                                                                    item={choiceItem}
+                                                                    changeFunction={updateChoiceData}
+                                                                />
+                                                            ) : Number(choiceItem?.type) !== 1 ? (
+                                                                /* Non-type-1 items use the spicyCheckBox / radio-style UI. Pressing it will toggle selection similarly. */
+                                                                <View style={addFoodStyles.spicyCheckBox}>
+                                                                    <View key={_index} style={addFoodStyles.checkBoxitems}>
+                                                                        <TouchableOpacity
+                                                                            style={selectedChoiceIds.includes(choiceItem?.id) ? addFoodStyles.checkboxselect : addFoodStyles.checkbox}
+                                                                            onPress={() => toggleChoiceSelect(choiceItem)}
+                                                                        >
+                                                                            {selectedChoiceIds.includes(choiceItem?.id) && <IconAntDesign name="check" size={14} color="#fff" />}
+                                                                        </TouchableOpacity>
+                                                                    </View>
+                                                                </View>
+                                                            ) : (
+                                                                /* type 1 but not selected -> render nothing on the right */
+                                                                <View style={{ width: 70, height: 30 }} />
+                                                            )}
 
                                                         </View>
                                                     </>

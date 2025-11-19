@@ -19,11 +19,12 @@ import { _retrieveStoreData } from '../../utils/store'
 import FoodCardSkeleton from '../../components/foodcard/foodskelaton'
 import CategoriesSkeleton from '../../components/categories/CategoriesSkelatomn'
 import Modal from "react-native-modal";
+import SubCategories from '../../components/categories/subCategory'
 
 const Home = () => {
     const [openModal, setOpenModal] = useState(false)
     const [selectedfood, setSelectedFood] = useState(null)
-    const { tempFood } = useContext(UserContext)
+    const { tempFood, state } = useContext(UserContext)
     const [openModaltable, setOpenModaltable] = useState(false)
     const menuOptions = [
         'Tuesday Deal',
@@ -42,6 +43,7 @@ const Home = () => {
     const [optionData, setOptionData] = useState([])
     const [dishesListData, setDishListData] = useState([])
 
+    const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
     const AddFoodModal = async (f) => {
         console.log("Add Food Modal")
@@ -89,11 +91,13 @@ const Home = () => {
         console.log('api der')
         setCategoriesLoading(true)
         let _usertoken = await _retrieveStoreData('_waiter_token')
+        let _userData = await _retrieveStoreData('userSession_waiter')
 
         try {
-            let api_res = await apiRequest('waiter/get-business-dishes', 'post', {
+            let api_res = await apiRequest('waiter/get-business-categories', 'post', {
                 lang_id: '1',
-                type: '2'
+                type: '2',
+                business_id: _userData?.business
             }, {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -102,9 +106,13 @@ const Home = () => {
             console.log(api_res, 'api response>>>>>')
 
 
-            if (api_res?.status == true) setCategoriesData(api_res?.categories)
-            await fetchsubCategoryData(api_res?.categories[0]?.id)
+            if (api_res?.status == true) setCategoriesData(api_res?.data)
+            await fetchsubCategoryData(api_res?.data[0]?.id, _userData?.business)
             // console.log()
+            const obj = JSON.parse(api_res?.data[0]?.name);
+
+            const firstValue = obj[Object.keys(obj)[0]];
+            setSelectedCategoryactive([firstValue])
             setCategoriesLoading(false)
         } catch (error) {
             console.log('catch error ', error)
@@ -112,7 +120,7 @@ const Home = () => {
     }
 
     // fetch  subcategory list data
-    async function fetchsubCategoryData(cat_id) {
+    async function fetchsubCategoryData(cat_id, business_id) {
         setSubcategorylistData([])
         setDishListData([])
         console.log('api der')
@@ -120,10 +128,11 @@ const Home = () => {
         let _usertoken = await _retrieveStoreData('_waiter_token')
 
         try {
-            let api_res = await apiRequest('waiter/categories-dishes', 'post', {
+            let api_res = await apiRequest('waiter/get-business-dishes', 'post', {
                 category_id: cat_id,
                 lang_id: '1',
-                type: '2'
+                type: '2',
+                business_id: business_id
             }, {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -131,14 +140,13 @@ const Home = () => {
             })
 
 
+            console.log(api_res, 'item data////////////////////')
             if (api_res?.status == true) {
-                if (typeof api_res?.data?.dishes == 'undefined') {
-                    console.log(api_res?.data, 'sub catetlfkdf')
-                    setSubcategorylistData(api_res?.data)
-                } else if (typeof api_res?.data?.dishes != undefined && Array.isArray(api_res?.data?.dishes)) {
-                    console.log(api_res?.data?.dishes, 'api response dishes///////')
-                    setDishListData(api_res?.data?.dishes)
-                }
+                // if (typeof api_res?.data == 'undefined') {
+                console.log(api_res?.data, 'sub catetlfkdf')
+                setDishListData(api_res?.data)
+
+                // }
             }
             // console.log()
             setloading(false)
@@ -148,7 +156,7 @@ const Home = () => {
     }
 
     useMemo(() => {
-        fetchsubCategoryData(selected?.id)
+        fetchsubCategoryData(selected?.id, state?.user_data?.business)
     }, [selected])
 
     // check box update data
@@ -210,6 +218,34 @@ const Home = () => {
                         />
                     )}
 
+                    <View>
+                        {
+                            !categoriesLoaDING && (
+                                <FlatList
+                                    horizontal
+                                    ref={flatListRef}
+                                    data={categoriesData[0]?.childrenCategories}
+                                    renderItem={({ item, index }) => (
+                                        <SubCategories
+                                            item={item}
+                                            isSelected={selected?.id == item?.id}
+                                            onPress={() => {
+                                                setSelected(item);
+                                                autoScrollIfNeeded(index);
+                                            }}
+                                        />
+                                    )}
+                                    keyExtractor={(item) => item?.id?.toString()}
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{
+                                        paddingBottom: 10,
+                                        // borderBottomColor:'gray',
+                                        // borderBottomWidth:1.5
+                                    }}
+                                />
+                            )
+                        }
+                    </View>
                     {/* {
                         foodsdata?.map((food) => (
                             <View key={food?.id} style={homeStyles.foodSection}>
@@ -240,7 +276,18 @@ const Home = () => {
                         ))
                     )
                     }
+                    <View>
+                        <Text style={{
+                            color: '#0000ff',
+                            fontFamily: "Jost_400Regular",
+                            fontSize: 18,
+                            fontWeight: '700'
+                        }}>{
+                                !categoriesLoaDING && selectedCateActive
+                                // selected == null ? selectedCateActive : JSON.parse(selected?.name)[Object.keys(JSON.parse(selected?.name))[0]]
 
+                            } </Text>
+                    </View>
                     {
                         !loading && (
                             <>
@@ -262,34 +309,43 @@ const Home = () => {
                                                 keyExtractor={(item) => item?.id?.toString()}
                                                 showsHorizontalScrollIndicator={false}
                                                 contentContainerStyle={homeStyles.foodSection}
-
+                                                ListEmptyComponent={() => {
+                                                    <View>
+                                                        <Text style={{
+                                                            fontSize: 25,
+                                                            color: '#000000',
+                                                            fontWeight: '600'
+                                                        }}> No Dish Found !</Text>
+                                                    </View>
+                                                }}
 
                                             />
                                         </>
                                     )
                                         :
                                         (
-                                            <SectionList
-                                                sections={subcategoryListData.map(food => ({
-                                                    title: food.name,
-                                                    data: food.dishes || []
-                                                }))}
-                                                keyExtractor={(item) => item.id?.toString()}
-                                                renderSectionHeader={({ section: { title } }) => (
-                                                    <Text style={{ fontWeight: "500", fontSize: 15 }}>{title}</Text>
-                                                )}
-                                                renderItem={({ item }) => (
+                                            <> </>
+                                            // <SectionList
+                                            //     sections={subcategoryListData.map(food => ({
+                                            //         title: food.name,
+                                            //         data: food.dishes || []
+                                            //     }))}
+                                            //     keyExtractor={(item) => item.id?.toString()}
+                                            //     renderSectionHeader={({ section: { title } }) => (
+                                            //         <Text style={{ fontWeight: "500", fontSize: 15 }}>{title}</Text>
+                                            //     )}
+                                            //     renderItem={({ item }) => (
 
-                                                    <FoodCard
-                                                        key={item.id}
-                                                        onPress={() => AddFoodModal(item)}
-                                                        food={item}
-                                                    />
-                                                )}
-                                                contentContainerStyle={homeStyles.foodSection}
-                                                stickySectionHeadersEnabled={false}
-                                                showsVerticalScrollIndicator={false}
-                                            />
+                                            //         <FoodCard
+                                            //             key={item.id}
+                                            //             onPress={() => AddFoodModal(item)}
+                                            //             food={item}
+                                            //         />
+                                            //     )}
+                                            //     contentContainerStyle={homeStyles.foodSection}
+                                            //     stickySectionHeadersEnabled={false}
+                                            //     showsVerticalScrollIndicator={false}
+                                            // />
                                         )
                                 }
 

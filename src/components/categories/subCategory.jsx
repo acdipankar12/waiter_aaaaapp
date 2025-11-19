@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
 import FeatherIcon from 'react-native-vector-icons/Feather';
 
-const Categories = ({ item, isSelected, onPress }) => {
+const SubCategories = ({ item, isSelected, onPress }) => {
     const obj = JSON.parse(item?.name);
 
     const firstValue = obj[Object.keys(obj)[0]];
@@ -18,21 +18,31 @@ const Categories = ({ item, isSelected, onPress }) => {
             <Text style={[styles.pillText, isSelected && styles.selectedText]}>
                 {firstValue}
             </Text>
-          
+            {
+                typeof item?.childrenCategories != null && item?.childrenCategories?.length != 0 && (
+                    <FeatherIcon
+                        name='chevron-down'
+                        color={isSelected ? '#FFFFFF' : '#0000ff'}
+                        size={20}
+                    />
+                )
+            }
 
         </TouchableOpacity>
     )
 }
 const styles = StyleSheet.create({
     pill: {
-        backgroundColor: '#f0f0ff',
+        // backgroundColor: '#f0f0ff',
         paddingVertical: 8,
         paddingHorizontal: 15,
-        borderRadius: 20,
+        // borderRadius: 20,
         marginRight: 10,
+        borderBottomColor: '#0000ff',
+        borderBottomWidth: 1
     },
     selectedPill: {
-        backgroundColor: '#0000ff',
+        // backgroundColor: '#0000ff',
     },
     pillText: {
         color: '#0000ff',
@@ -42,4 +52,4 @@ const styles = StyleSheet.create({
         color: '#ffffff',
     },
 });
-export default Categories
+export default SubCategories
