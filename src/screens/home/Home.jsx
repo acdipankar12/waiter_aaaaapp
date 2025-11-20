@@ -52,6 +52,8 @@ const Home = () => {
 
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
+
+    const [selectedTablenumber , setselectedTablenumber] = useState(1)
     const AddFoodModal = async (f) => {
         console.log("Add Food Modal")
         await fetchDishOptionData(f?.id)
@@ -222,15 +224,15 @@ const Home = () => {
     return (
         <>
 
-            {
+            {/* {
                 openModal ? <AddFood
                     setOpenModal={setOpenModal}
                     food={selectedfood}
                     openModal={openModal}
 
                 /> : null
-            }
-            {openModaltable ? <BookTable setOpenModaltable={setOpenModaltable} /> : null}
+            } */}
+
             {/* <ScrollView style={{ flex: 1, paddingBottom: 70, backgroundColor: "#fff", }}> */}
             <SafeAreaView style={{
                 flex: 1, paddingBottom: 70, backgroundColor: "#fff",
@@ -492,9 +494,26 @@ const Home = () => {
                         selectedItemName={selectedfood?.name}
 
                         updateOptionData={setOptionData}
+                        selectedFood={selectedfood}
+                        table_modalopen={setOpenModaltable}
+                        selectedTablenumber={selectedTablenumber}
 
                     />
                 </Modal>
+                {openModaltable && (
+                    <>
+                        <Modal
+                            isVisible={openModaltable}
+                        // onBackButtonPress={() => setOpenModal(false)}
+                        // onBackdropPress={() => setOpenModal(false)}
+                        >
+                            <BookTable
+                            setselectedTablenumber={setselectedTablenumber}
+                            selectedtablenumber={selectedTablenumber}
+                            setOpenModaltable={setOpenModaltable} />
+                        </Modal>
+                    </>
+                )}
             </SafeAreaView>
             {/* </ScrollView> */}
             <TouchableOpacity onPress={() => setOpenModaltable(true)} style={homeStyles.cartFloat}>

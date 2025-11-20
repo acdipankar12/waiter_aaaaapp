@@ -4,10 +4,10 @@ import React, { useContext, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { UserContext } from '../../context/UserContext';
- import {AntDesign} from 'react-native-vector-icons/AntDesign'
-const BookTable = ({ setOpenModaltable }) => {
+import FeatherIcon from 'react-native-vector-icons/Feather';
+const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber }) => {
     const [open, setOpen] = useState(false);
-    const [table, settable] = useState(0);
+    const [table, settable] = useState(selectedtablenumber);
     const navigation = useNavigation()
     const { cart, setCart, tempFood, setTempFood } = useContext(UserContext)
 
@@ -39,9 +39,11 @@ const BookTable = ({ setOpenModaltable }) => {
             <View style={styles.addbox}>
                 <Text style={{ fontFamily: "Jost_500Medium", fontSize: 20 }}>Book A Table</Text>
                 <View style={styles.wrapper}>
-                    <Pressable style={styles.drop} onPress={() => setOpen(!open)}>
-                        <Text style={styles.placeholder}>{table === 0 ? "Select A Table" : `Table ${table}`}</Text>
-                        <AntDesign name="down" size={18} color="#888888" />
+                    <Pressable style={styles.drop} onPress={() => {
+                        setOpen(!open)
+                    }}>
+                        <Text style={styles.placeholder}>{table === 0 ? "Select A Table" : `Select Table ${selectedtablenumber}`}</Text>
+                        <FeatherIcon name="chevron-down" size={18} color="#888888" />
                     </Pressable>
 
                     {open && (
@@ -50,7 +52,7 @@ const BookTable = ({ setOpenModaltable }) => {
                                 <Text
                                     key={i}
                                     onPress={() => {
-                                        settable(i + 1);
+                                        setselectedTablenumber(i + 1);
                                         setOpen(false)
                                     }}
                                     style={styles.dropItem}
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
         height: "100%",
         alignItems: "center",
         position: "absolute",
-        backgroundColor: "#000000B2",
+        // backgroundColor: "#000000B2",
         zIndex: 1
     },
     addbox: {

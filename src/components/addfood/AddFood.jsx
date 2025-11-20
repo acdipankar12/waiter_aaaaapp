@@ -7,14 +7,15 @@ import { useNavigation } from '@react-navigation/native'
 import IconAntDesign from 'react-native-vector-icons/AntDesign'
 import IconFontisto from 'react-native-vector-icons/Fontisto'
 import { UserContext } from '../../context/UserContext'
+import { _setStoreData } from '../../utils/store'
 
-const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData }) => {
+const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }) => {
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
     const [checkedChoices, setCheckedChoices] = useState({}); // map of choiceId -> bool (checked)
     const [selectedChoiceIds, setSelectedChoiceIds] = useState([]); // array of selected choice ids
-    const { setTempFood, tempFood } = useContext(UserContext)
+    const { setTempFood, tempFood, dispatch } = useContext(UserContext)
 
     const addTempFood = (foodItem) => {
         setTempFood(prev => [...prev, foodItem]);
@@ -161,6 +162,41 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
 
     }
+
+    async function sanitize_dishData() {
+        table_modalopen(true)
+        const parentOptionIds = food
+            .filter(option =>
+                option.choices.some(choice => selectedChoiceIds.includes(choice.id))
+            )
+            .map(option => option.id);
+
+        let filteraddedchoices = food.flatMap(option => option.choices)         // merge all choices into one list
+            .filter(choice => selectedChoiceIds.includes(choice.id));
+        console.log(filteraddedchoices, 'chocefds')
+        let dish_obj = {
+            ...selectedFood,
+            relation: {
+                choices: selectedChoiceIds,
+                options: parentOptionIds
+            },
+            sets: filteraddedchoices
+        }
+        let _finalDataformat = {
+            category: '',
+            data: [dish_obj],
+            extraminimum: '',
+            id: selectedFood?.id,
+            table_number: selectedTablenumber
+        }
+
+        await _setStoreData('user_cartdata', JSON.stringify(_finalDataformat))
+        dispatch({ type: 'ADD_CART', payload: _finalDataformat })
+
+        console.log(_finalDataformat, 'final data submit....')
+
+    }
+
     return (
         <View style={addFoodStyles.modalWrapper}>
             <View style={addFoodStyles.addbox}>
@@ -292,19 +328,20 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                 <View style={addFoodStyles.footer}>
                     <Text style={{ fontSize: 16, fontWeight: 700 }}>Total $11.90</Text>
                     <TouchableOpacity onPress={() => {
-                        addTempFood({
-                            name: food.foodname,
-                            price: food.price,
-                            desc: food.desc,
-                            spice: spiceLevel,
-                            dish: selectedRices
-                        })
+                        sanitize_dishData()
+                        // addTempFood({
+                        //     name: food.foodname,
+                        //     price: food.price,
+                        //     desc: food.desc,
+                        //     spice: spiceLevel,
+                        //     dish: selectedRices
+                        // })
                         Toast.show({
                             type: "success",
                             text1: "Successfully Added in table"
                         }),
-                            setOpenModal(false)
-                        console.log(tempFood)
+                            // setOpenModal(false)
+                            console.log(tempFood)
 
                     }} style={addFoodStyles.add}>
                         <Text style={{ color: "#fff", fontSize: 18 }}>Add</Text>

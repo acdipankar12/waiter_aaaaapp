@@ -24,7 +24,7 @@ export const ContextProvider = ({ children }) => {
             case 'ADD_CART':
                 return {
                     ...state,
-                    cart_data: [...state?.actioncart_data, ...action.payload]
+                    cart_data: [...state?.cart_data, ...action.payload]
 
                 };
             case 'REMOVE_CART_DATA':
