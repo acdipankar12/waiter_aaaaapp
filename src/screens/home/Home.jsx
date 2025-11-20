@@ -42,6 +42,10 @@ const Home = () => {
 
     // currentChildren holds the list being shown in the subcategory row
     const [currentChildren, setCurrentChildren] = useState([])
+    // stack to track previous children arrays for back navigation
+    const [childrenStack, setChildrenStack] = useState([])
+    // top-level selected category (whose children we're drilling)
+    const [activeCategory, setActiveCategory] = useState(null)
 
     const [optionData, setOptionData] = useState([])
     const [dishesListData, setDishListData] = useState([])
@@ -124,21 +128,20 @@ const Home = () => {
                 // set default selected to first category
                 const firstCat = api_res?.data[0]
                 if (firstCat) {
+                    setActiveCategory(firstCat)
                     setSelected(firstCat)
                     // set the current children for the first category (handle both keys)
-                    // const children = firstCat?.childrenCategories ?? firstCat?.children_categories ?? []
                     const children = [
-                        { id: 189, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                        { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
                         ...(firstCat?.childrenCategories ?? firstCat?.children_categories ?? [])
                     ];
-                    setSelected({ id: 189, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" })
-
+                    setChildrenStack([])
                     setCurrentChildren(children)
                     await fetchsubCategoryData(firstCat.id, _userData?.business)
 
                     const obj = firstCat?.name ? JSON.parse(firstCat.name) : {}
                     const firstValue = obj[Object.keys(obj)[0]]
-                    setSelectedCategoryactive(firstValue)
+                    setSelectedCategoryactive([firstValue])
                 }
             }
             setCategoriesLoading(false)
@@ -184,14 +187,33 @@ const Home = () => {
     }
 
     useEffect(() => {
-        if (selected?.id == 189) {
-            console.log(currentChildren, 'all data /////')
-            fetchsubCategoryData(currentChildren?.id, state?.user_data?.business)
-            return
-        }
-        // Whenever `selected` changes, fetch dishes for that category
+        // Whenever `selected` changes, fetch dishes for that category/subcategory
         if (selected?.id) fetchsubCategoryData(selected.id, state?.user_data?.business)
     }, [selected])
+
+    const handleBack = () => {
+        if (childrenStack.length > 0) {
+            const prev = childrenStack[childrenStack.length - 1]
+            setChildrenStack(prevStack => prevStack.slice(0, -1))
+            setCurrentChildren(prev)
+            setSelectedCategoryactive(prevArr => prevArr.slice(0, -1))
+            // reset selected to activeCategory so dish list shows category items
+            if (activeCategory) setSelected(activeCategory)
+            return
+        }
+        // if no more stack, reset to active category top-level children
+        if (activeCategory) {
+            const children = [
+                { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                ...(activeCategory?.childrenCategories ?? activeCategory?.children_categories ?? [])
+            ]
+            setCurrentChildren(children)
+            const obj = activeCategory?.name ? JSON.parse(activeCategory.name) : {}
+            const firstValue = obj[Object.keys(obj)[0]]
+            setSelectedCategoryactive([firstValue])
+            setSelected(activeCategory)
+        }
+    }
 
     // check box update data
     const selectCheckboxData = () => {
@@ -239,15 +261,18 @@ const Home = () => {
                                     item={item}
                                     isSelected={selected?.id == item?.id}
                                     onPress={() => {
-                                        // select category and display its children
+                                        // select category and display its children (reset drill stack)
+                                        setActiveCategory(item)
                                         setSelected(item)
-                                        // const children = item?.childrenCategories ?? item?.children_categories ?? []
                                         const children = [
                                             { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
                                             ...(item?.childrenCategories ?? item?.children_categories ?? [])
                                         ];
-
+                                        setChildrenStack([])
                                         setCurrentChildren(children)
+                                        const obj = item?.name ? JSON.parse(item.name) : {}
+                                        const catLabel = obj[Object.keys(obj)[0]]
+                                        setSelectedCategoryactive([catLabel])
                                         // auto scroll categories list when needed
                                         autoScrollCategories(index)
                                     }}
@@ -273,59 +298,37 @@ const Home = () => {
                                             item={item}
                                             isSelected={selected?.id == item?.id}
                                             onPress={() => {
-                                                // if this subcategory has deeper children, drill in
-                                                const children = [
-                                                    {
-                                                        "id": 2106,
-                                                        "parent_id": 887,
-                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
-                                                        "description": null,
-                                                        "is_img": null,
-                                                        "icon": null,
-                                                        "business": 33,
-                                                        "rank": 2,
-                                                        "status": "1",
-                                                        "children_categories": []
-                                                    },
-                                                    {
-                                                        "id": 2176,
-                                                        "parent_id": 887,
-                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
-                                                        "description": null,
-                                                        "is_img": null,
-                                                        "icon": null,
-                                                        "business": 33,
-                                                        "rank": 2,
-                                                        "status": "1",
-                                                        "children_categories": []
-                                                    },
-                                                    {
-                                                        "id": 206,
-                                                        "parent_id": 887,
-                                                        "name": "{\"1\":\"Main Course\",\"5\":\"Main Course\",\"6\":\"Main Course\"}",
-                                                        "description": null,
-                                                        "is_img": null,
-                                                        "icon": null,
-                                                        "business": 33,
-                                                        "rank": 2,
-                                                        "status": "1",
-                                                        "children_categories": []
-                                                    }
-                                                ]
-                                                // const children = [
-                                                //     { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
-                                                //     ...(item?.childrenCategories ?? item?.children_categories ?? [])
-                                                // ];
+                                                // determine actual children from API shape
+                                                const children = item?.childrenCategories ?? item?.children_categories ?? []
                                                 const obj = item?.name ? JSON.parse(item.name) : {}
-                                                const firstValue = `  ->  ${obj[Object.keys(obj)[0]]}`
-                                                setSelectedCategoryactive(prev => [...prev, firstValue])
+                                                const label = obj[Object.keys(obj)[0]]
+                                                const isAll = item?.id === 0
+
                                                 if (children && children.length > 0) {
-                                                    setCurrentChildren(children)
+                                                    // push current children to stack so Back can restore
+                                                    setChildrenStack(prev => [...prev, currentChildren])
+                                                    // add an "All" option at this nested level as first item
+                                                    const nextChildren = [
+                                                        { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                                        ...children
+                                                    ]
+                                                    setCurrentChildren(nextChildren)
+                                                    if (selectedCateActive.includes(label) == false) {
+                                                        setSelectedCategoryactive(prev => [...prev, label])
+                                                    }
+
                                                     setSelected(item)
                                                     autoScrollSubcategories(index)
                                                 } else {
-                                                    // leaf subcategory: select and fetch dishes
-                                                    setSelected(item)
+                                                    // leaf selected: if it's the "All" placeholder, use activeCategory to fetch
+                                                    if (isAll && activeCategory) {
+                                                        setSelected(activeCategory)
+                                                    } else {
+                                                        setSelected(item)
+                                                        if (selectedCateActive.includes(label) == false) {
+                                                            setSelectedCategoryactive(prev => [...prev, label])
+                                                        }
+                                                    }
                                                     autoScrollSubcategories(index)
                                                 }
                                             }}
@@ -363,6 +366,45 @@ const Home = () => {
 
                     {/* section list data.../// */}
 
+
+                    <View style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        //    paddingHorizontal:20
+                    }}>
+                        <View style={{
+                            maxWidth: '80%'
+                        }} >
+                            <Text style={{
+                                color: '#0000ff',
+                                fontFamily: "Jost_400Regular",
+                                fontSize: 18,
+                                fontWeight: '700'
+                            }}>{
+
+                                    !categoriesLoaDING && (Array.isArray(selectedCateActive) ? selectedCateActive.join('  >  ') : selectedCateActive)
+                                    // selected == null ? selectedCateActive : JSON.parse(selected?.name)[Object.keys(JSON.parse(selected?.name))[0]]
+
+                                } </Text>
+                        </View>
+
+                        {
+                            childrenStack?.length > 0 && (
+                                <TouchableOpacity onPress={handleBack}>
+                                    <Text style={{
+                                        backgroundColor: '#0000ff',
+                                        padding: 4,
+                                        paddingHorizontal: 12,
+                                        borderRadius: 5,
+                                        color: '#FFFFFF',
+                                        // position:'absolute'
+                                    }}>Back</Text>
+                                </TouchableOpacity>
+                            )
+                        }
+
+                    </View>
                     {loading && (
                         // Show 4 skeletons as placeholder
                         Array.from({ length: 4 }).map((_, idx) => (
@@ -370,33 +412,6 @@ const Home = () => {
                         ))
                     )
                     }
-                    <View style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between'
-                    }}>
-                        <Text style={{
-                            color: '#0000ff',
-                            fontFamily: "Jost_400Regular",
-                            fontSize: 18,
-                            fontWeight: '700'
-                        }}>{
-
-
-                                !categoriesLoaDING && selectedCateActive
-                                // selected == null ? selectedCateActive : JSON.parse(selected?.name)[Object.keys(JSON.parse(selected?.name))[0]]
-
-                            } </Text>
-                        <TouchableOpacity >
-                            <Text style={{
-                                backgroundColor: '#0000ff',
-                                padding: 4,
-                                paddingHorizontal: 12,
-                                borderRadius: 5,
-                                color: '#FFFFFF'
-                            }}>Back</Text>
-                        </TouchableOpacity>
-                    </View>
                     {
                         !loading && (
                             <>

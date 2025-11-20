@@ -8,7 +8,7 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import RenderHtml from 'react-native-render-html';
 import HTML from 'react-native-render-html';
 
-const FoodCard = ({ onPress, food  }) => {
+const FoodCard = ({ onPress, food }) => {
     return (
         <View style={styles.card}>
             <Image source={{ uri: food.url }} style={styles.image} />
@@ -26,14 +26,16 @@ const FoodCard = ({ onPress, food  }) => {
                     }</Text>
                 </View>
                 <View style={styles.descriptionRow}>
+                    <View>
+                        <HTML html={food?.description}
+                            containerStyle={styles?.description}
+                        //    imagesMaxWidth={Dimensions.get('window').width}
+                        />
+                    </View>
 
-                    <HTML html={food?.description}
-                        containerStyle={styles?.description}
-                    //    imagesMaxWidth={Dimensions.get('window').width}
-                    />
 
 
-                    <View style={styles.actions}>
+                    <View style={[styles.actions]}>
                         <TouchableOpacity style={styles.iconButton}>
                             <AntDesignIcon name="appstore1" size={16} color="#fff" style={styles.ico1} />
                         </TouchableOpacity>
@@ -104,14 +106,14 @@ const styles = StyleSheet.create({
         fontSize: 13,
         flexShrink: 1,
         fontWeight: "400",
-        maxWidth: '95%',
+        maxWidth: '80%',
     },
     actions: {
         flexDirection: 'row',
         gap: 6,
         alignSelf: "flex-end",
         marginLeft: 10,
-        position:'relative'
+        position: 'relative'
     },
     iconButton: {
         backgroundColor: '#FFA235',
