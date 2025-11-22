@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, TextInput } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import { addFoodStyles } from './styles'
 import Toast from 'react-native-toast-message'
 import { useNavigation } from '@react-navigation/native'
@@ -9,13 +9,13 @@ import IconFontisto from 'react-native-vector-icons/Fontisto'
 import { UserContext } from '../../context/UserContext'
 import { _setStoreData } from '../../utils/store'
 
-const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }) => {
+const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }, ref) => {
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
     const [checkedChoices, setCheckedChoices] = useState({}); // map of choiceId -> bool (checked)
     const [selectedChoiceIds, setSelectedChoiceIds] = useState([]); // array of selected choice ids
-    const { setTempFood, tempFood, dispatch } = useContext(UserContext)
+    const { setTempFood, tempFood, dispatch, state } = useContext(UserContext)
 
     const addTempFood = (foodItem) => {
         setTempFood(prev => [...prev, foodItem]);
@@ -164,7 +164,7 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
     }
 
     async function sanitize_dishData() {
-        table_modalopen(true)
+        // table_modalopen(true)
         const parentOptionIds = food
             .filter(option =>
                 option.choices.some(choice => selectedChoiceIds.includes(choice.id))
@@ -190,15 +190,20 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
             table_number: selectedTablenumber
         }
 
-        await _setStoreData('user_cartdata', JSON.stringify(_finalDataformat))
+        // await _setStoreData('user_cartdata', JSON.stringify(_finalDataformat))
         dispatch({ type: 'ADD_CART', payload: _finalDataformat })
 
-        console.log(_finalDataformat, 'final data submit....')
+        console.log(state, 'final data submit....')
 
     }
 
+    // expose sanitize function to parent via ref so parent (and siblings) can call it
+    useImperativeHandle(ref, () => ({
+        sanitize_dishData
+    }), [food, selectedChoiceIds, selectedFood, selectedTablenumber])
+
     return (
-        <View style={addFoodStyles.modalWrapper}>
+        <View style={addFoodStyles.modalWrapper} key={selectedFood?.id}>
             <View style={addFoodStyles.addbox}>
                 <View style={addFoodStyles.head}>
                     <Text style={addFoodStyles.headname}>{selectedItemName}</Text>
@@ -328,7 +333,7 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                 <View style={addFoodStyles.footer}>
                     <Text style={{ fontSize: 16, fontWeight: 700 }}>Total $11.90</Text>
                     <TouchableOpacity onPress={() => {
-                        sanitize_dishData()
+                        table_modalopen(true)
                         // addTempFood({
                         //     name: food.foodname,
                         //     price: food.price,
@@ -352,4 +357,4 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
     )
 }
 
-export default AddFood
+export default forwardRef(AddFood)

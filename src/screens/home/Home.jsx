@@ -13,6 +13,7 @@ import EntypoIcon from 'react-native-vector-icons/Entypo';
 
 import BookTable from '../../components/booktable/BookTable'
 import { foodsdata } from '../../data/foods'
+// import React, { useContext, useEffect, useRef, useState } from 'react'
 import { UserContext } from '../../context/UserContext'
 import { apiRequest } from '../../utils/apiService'
 import { _retrieveStoreData } from '../../utils/store'
@@ -53,28 +54,43 @@ const Home = () => {
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
 
-    const [selectedTablenumber , setselectedTablenumber] = useState(1)
+    const [selectedTablenumber, setselectedTablenumber] = useState(1)
+    // ref to access AddFood's imperative handle (exposed sanitize function)
+    const addFoodRef = useRef(null)
     const AddFoodModal = async (f) => {
         console.log("Add Food Modal")
-        await fetchDishOptionData(f?.id)
-        setOpenModal(true)
+        // open modal immediately so UI isn't blocked by the network request
         setSelectedFood(f)
+        setOpenModal(true)
+        try {
+            await fetchDishOptionData(f?.id)
+        } catch (e) {
+            console.log('Failed fetching dish options, showing modal anyway', e)
+            // ensure optionData is cleared so AddFood can render safely
+            setOptionData([])
+        }
     }
 
     async function fetchDishOptionData(dishid) {
-        let _usertoken = await _retrieveStoreData('_waiter_token')
+        try {
+            let _usertoken = await _retrieveStoreData('_waiter_token')
 
-        let apiRes = await apiRequest('waiter/get-business-dish-details', 'post', {
-            lang_id: '1',
-            dish_id: dishid
-        }, {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            'Authorization': `Bearer ${_usertoken}`
-        })
+            let apiRes = await apiRequest('waiter/get-business-dish-details', 'post', {
+                lang_id: '1',
+                dish_id: dishid
+            }, {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                'Authorization': `Bearer ${_usertoken}`
+            })
 
-        setOptionData(apiRes?.data?.options)
-        console.log(apiRes, 'dish option data/???')
+            setOptionData(apiRes?.data?.options)
+            console.log(apiRes, 'dish option data/???')
+        } catch (err) {
+            console.log('fetchDishOptionData error', err)
+            setOptionData([])
+            throw err
+        }
     }
 
 
@@ -487,6 +503,7 @@ const Home = () => {
                     onBackdropPress={() => setOpenModal(false)}
                 >
                     <AddFood
+                        ref={addFoodRef}
                         setOpenModal={setOpenModal}
                         food={optionData}
                         openModal={openModal}
@@ -508,9 +525,12 @@ const Home = () => {
                         // onBackdropPress={() => setOpenModal(false)}
                         >
                             <BookTable
-                            setselectedTablenumber={setselectedTablenumber}
-                            selectedtablenumber={selectedTablenumber}
-                            setOpenModaltable={setOpenModaltable} />
+                                setselectedTablenumber={setselectedTablenumber}
+                                selectedtablenumber={selectedTablenumber}
+                                setOpenModaltable={setOpenModaltable}
+                                // pass a safe wrapper that calls AddFood's sanitize function exposed via ref
+                                sanitize_dishData={() => addFoodRef.current?.sanitize_dishData?.()}
+                            />
                         </Modal>
                     </>
                 )}

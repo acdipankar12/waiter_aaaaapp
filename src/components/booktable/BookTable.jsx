@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { UserContext } from '../../context/UserContext';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber }) => {
+const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber, sanitize_dishData }) => {
     const [open, setOpen] = useState(false);
     const [table, settable] = useState(selectedtablenumber);
     const navigation = useNavigation()
@@ -65,7 +65,17 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                 </View>
                 <View style={styles.butt}>
                     <TouchableOpacity
-                        onPress={() => {
+                        onPress={async () => {
+                            // if AddFood exposed a sanitize function, call it first to ensure data saved
+                            try {
+                                if (typeof sanitize_dishData === 'function') {
+                                    // console.log('tagle' ,table)
+                                    await sanitize_dishData()
+                                }
+                            } catch (e) {
+                                console.log('Error calling sanitize_dishData', e)
+                            }
+
                             assignTableAndPushToCart(table)
                             Toast.show({
                                 type: "success",
@@ -73,13 +83,13 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                                 text2: `Table No ${table} is booked`
                             })
                             console.log(cart)
-                            navigation.navigate("table-details", {
-                                order: false,
-                                addfood: true,
-                                fromcart: false,
-                                buttons: true,
-                                table: null
-                            })
+                            // navigation.navigate("table-details", {
+                            //     order: false,
+                            //     addfood: true,
+                            //     fromcart: false,
+                            //     buttons: true,
+                            //     table: null
+                            // })
                             // setOpenModaltable(false)
 
                         }}
