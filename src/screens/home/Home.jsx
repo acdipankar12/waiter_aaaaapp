@@ -25,7 +25,7 @@ import SubCategories from '../../components/categories/subCategory'
 const Home = () => {
     const [openModal, setOpenModal] = useState(false)
     const [selectedfood, setSelectedFood] = useState(null)
-    const { tempFood, state } = useContext(UserContext)
+    const { tempFood, state, dispatch } = useContext(UserContext)
     const [openModaltable, setOpenModaltable] = useState(false)
     const menuOptions = [
         'Tuesday Deal',
@@ -168,6 +168,16 @@ const Home = () => {
         }
     }
 
+    async function retrive_savecart() {
+        let _data = await _retrieveStoreData('user_cart_data')
+        console.log(JSON.parse(_data), 'local dartatatt')
+        await dispatch({ type: 'initilize_contestcart', payload: JSON.parse(_data) ?? JSON.parse(_data) })
+        // console.log(_data, 'cart darta stoet/////')
+    }
+    // return cart dish data from local storage
+    useEffect(() => {
+        retrive_savecart()
+    }, [])
     // fetch  subcategory list data
     async function fetchsubCategoryData(cat_id, business_id) {
         setSubcategorylistData([])

@@ -1,4 +1,5 @@
 import { createContext, useReducer, useState } from "react";
+import { _setStoreData } from "../utils/store";
 
 export const UserContext = createContext();
 
@@ -21,12 +22,58 @@ export const ContextProvider = ({ children }) => {
                 return { ...state, user_data: action.payload };
             case 'SET_IS_LOGIN':
                 return { ...state, is_login: action.payload };
-            case 'ADD_CART':
+            case 'ADD_CART': {
+                // const payload = action.payload;
+                // const newItems = Array.isArray(payload)
+                //     ? payload
+                //     : (payload != null ? [payload] : []);
+                // console.log('added item to cart context///////////////' ,newItems)
                 return {
                     ...state,
-                    cart_data: [ ...action.payload]
-
+                    cart_data: [...state.cart_data, action.payload]
                 };
+                // console.log(state, 'sfsfsf')
+            }
+            case 'initilize_contestcart': {
+                // const payload = action.payload;
+                // const newItems = Array.isArray(payload)
+                //     ? payload
+                //     : (payload != null ? [payload] : []);
+                // console.log('added item to cart context///////////////' ,newItems)
+                console.log(action.payload, 'niiioioioioi')
+                return {
+                    ...state,
+                    cart_data: action?.payload != null ? action.payload : []
+                };
+                // console.log(state, 'sfsfsf')
+            }
+            case 'UPDATE_CART_DATA': {
+                // const payload = action.payload;
+                // const newItems = Array.isArray(payload)
+                //     ? payload
+                //     : (payload != null ? [payload] : []);
+                // console.log('added item to cart context///////////////' ,newItems)
+                let updatedCartData = state.cart_data.map(item => {
+                    if (item.table_number === action.payload.table_number) {
+                        return {
+                            ...item,
+                            dishdata: [
+                                ...(item.dishdata || []),          // existing dishdata
+                                action.payload.dishdata[0]         // new dish
+                            ]
+                        };
+                    }
+                    return item; // unchanged items
+                });
+
+
+                // await _setStoreData('user_cart_data', JSON.stringify(updatedCartData))
+                return {
+                    ...state,
+                    cart_data: updatedCartData
+                };
+                // console.log(state, 'sfsfsf')
+            }
             case 'REMOVE_CART_DATA':
                 return {
                     ...state,

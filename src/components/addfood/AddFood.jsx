@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import IconAntDesign from 'react-native-vector-icons/AntDesign'
 import IconFontisto from 'react-native-vector-icons/Fontisto'
 import { UserContext } from '../../context/UserContext'
-import { _setStoreData } from '../../utils/store'
+import { _removeStoreData, _retrieveStoreData, _setStoreData } from '../../utils/store'
 
 const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }, ref) => {
     const navigation = useNavigation()
@@ -163,6 +163,8 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
     }
 
+
+
     async function sanitize_dishData() {
         // table_modalopen(true)
         const parentOptionIds = food
@@ -187,13 +189,64 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
             data: [dish_obj],
             extraminimum: '',
             id: selectedFood?.id,
-            table_number: selectedTablenumber
+
         }
 
-        // await _setStoreData('user_cartdata', JSON.stringify(_finalDataformat))
-        dispatch({ type: 'ADD_CART', payload: _finalDataformat })
+        let _save_storageData = {
+            table_number: selectedTablenumber,
+            dishdata: [_finalDataformat]
 
-        console.log(state, 'final data submit....')
+        }
+        // await _removeStoreData('user_cart_data')
+        // return;
+        // console.log(await _retrieveStoreData('user_cart_data'), 'local store dish data aray context data..........>?????')
+        // console.log(storage_cart_data, 'added storage data................>>')
+        // await _setStoreData('user_cart_data', JSON.stringify([state?.cart_data, _save_storageData]))
+
+        // check table number is present on current insert item
+        let CHECK_TABLE_NUMBER_PRESERNT = state?.cart_data?.some(dish => dish?.table_number == selectedTablenumber);
+        console.log(CHECK_TABLE_NUMBER_PRESERNT, 'table number>>>>>>>>>>>>>>>>>>')
+        if (CHECK_TABLE_NUMBER_PRESERNT) {
+            console.log('exit table numebra', state?.cart_data)
+            // let _filtered_dish_by_table_number = state?.cart_data?.find(dish_item => dish_item?.table_number == selectedTablenumber);
+            // _filtered_dish_by_table_number ?? _filtered_dish_by_table_number['dishdata']?.push(_finalDataformat)
+            let updatedCartData = state.cart_data.map(item => {
+                if (item.table_number === selectedTablenumber) {
+                    return {
+                        ...item,
+                        dishdata: [
+                            ...(item.dishdata || []),          // existing dishdata
+                            _finalDataformat      // new dish
+                        ]  
+                    };
+                }
+                return item; // unchanged items
+            });
+            console.log('modyfy the itemm', updatedCartData)
+            await _setStoreData('user_cart_data', JSON.stringify(updatedCartData))
+
+            dispatch({ type: 'UPDATE_CART_DATA', payload: _save_storageData })
+
+        } else {
+
+            console.log('not exit table number')
+            let _stateData = [
+                ...(state?.cart_data || []), // <- ensure we spread an array
+                _save_storageData             // make sure this is an object, not undefined
+            ];
+            // await _setStoreData('user_cart_data', JSON.stringify(updatedCartData))
+
+            await _setStoreData('user_cart_data', JSON.stringify([_save_storageData]))
+            dispatch({ type: 'ADD_CART', payload: _save_storageData })
+
+        }
+        // if()
+        // let storage_cart_data = await _retrieveStoreData('user_cartdata')
+        // console.log(storage_cart_data, 'storage cart_data//////////////////')
+        // await _setStoreData('user_cartdata', JSON.stringify([_finalDataformat]))
+        // dispatch({ type: 'ADD_CART', payload: _finalDataformat })
+
+        // console.log(state, 'final data submit....')
 
     }
 

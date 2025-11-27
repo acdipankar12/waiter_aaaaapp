@@ -1,14 +1,24 @@
-import { View, Text, StyleSheet } from 'react-native'
-import React, { useContext } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import React, { useContext, useEffect } from 'react'
 import Header from '../../components/header/Header'
 // import Entypo from '@expo/vector-icons/Entypo';
 import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../../context/UserContext';
 import EntypoIcon from 'react-native-vector-icons/Entypo';
+import { _retrieveStoreData, navigationRef } from '../../utils/store';
 
 const MyCart = () => {
     const navigation = useNavigation()
-    const { cart } = useContext(UserContext)
+    const { state } = useContext(UserContext)
+
+    async function retivecartdata() {
+        let cart_data = await _retrieveStoreData('user_cart_data')
+        console.log('cart ditemdata', cart_data)
+    }
+    useEffect(() => {
+
+        retivecartdata()
+    }, [])
     return (
         <View style={{ flex: 1 }}>
             <Header
@@ -17,23 +27,27 @@ const MyCart = () => {
             />
             <View style={styles.tables}>
                 {
-                    cart?.length === 0 ? <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 16, textAlign: "center" }}>No Booking has been done yet</Text> :
-                        cart?.map((c) => (
-                            <View key={c.id} style={styles.table}>
-                                <Text style={styles.tablenumber}>Table Number : {c?.table}</Text>
+                    state?.cart_data?.length === 0 ? <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 16, textAlign: "center" }}>No Booking has been done yet</Text> :
+                        state?.cart_data?.map((c) => (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.navigate('table-details', { table_details: c })
+                                }}
+                                key={c.table_number} style={styles.table}>
+                                <Text style={styles.tablenumber}>Table Number : {c?.table_number}</Text>
                                 <View style={styles.right}>
-                                    <Text style={styles.item}>Item: {c?.food?.length}</Text>
+                                    <Text style={styles.item}>Item: {c?.dishdata?.length}</Text>
                                     <EntypoIcon name="eye" size={19} color="#fff" style={styles.eye} onPress={() => {
-                                        navigation.navigate("table-details", {
-                                            order: false,
-                                            addfood: false,
-                                            fromcart: true,
-                                            buttons: true,
-                                            table: c?.table
-                                        })
+                                        // navigation.navigate("table-details", {
+                                        //     order: false,
+                                        //     addfood: false,
+                                        //     fromcart: true,
+                                        //     buttons: true,
+                                        //     table: c?.table_number
+                                        // })
                                     }} />
                                 </View>
-                            </View>
+                            </TouchableOpacity>
                         ))
                 }
 
