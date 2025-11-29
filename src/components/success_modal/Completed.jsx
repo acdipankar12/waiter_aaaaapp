@@ -1,8 +1,11 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import check from "../../../assets/checked.png"
+import { useNavigation } from '@react-navigation/native'
 
 const Completed = ({ setCompleted }) => {
+    const navigation = useNavigation()
+
     return (
         <View style={{ width: "100%", height: "100%", position: "absolute", zIndex: 1, backgroundColor: "#00000099", alignItems: "center" }}>
             <View style={{ width: "90%", backgroundColor: "#fff", paddingVertical: 20, alignItems: "center", justifyContent: "center", gap: 15, top: "20%", borderRadius: 20 }}>
@@ -12,6 +15,8 @@ const Completed = ({ setCompleted }) => {
                 <TouchableOpacity
                     onPress={() => {
                         setCompleted(false)
+                        navigation.navigate('order-list')
+
                     }}
                     style={{ backgroundColor: "#0102FD", paddingVertical: 10, paddingHorizontal: 30, borderRadius: 10 }}
                 >

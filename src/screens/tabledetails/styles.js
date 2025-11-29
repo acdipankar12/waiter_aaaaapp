@@ -31,13 +31,13 @@ export const tableDetailstyles = StyleSheet.create({
         color: "#fff",
         fontSize: 16,
         fontFamily: "Jost-Medium",
-        fontWeight:'500'
+        fontWeight: '500'
     },
     headtext2: {
         color: "#fff",
         fontSize: 16,
         fontFamily: "Jost-Medium",
-        fontWeight:'500'
+        fontWeight: '500'
     },
     fooditem: {
         paddingVertical: 15,
@@ -64,12 +64,12 @@ export const tableDetailstyles = StyleSheet.create({
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
         color: "#0102FDBB",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     itemdesc: {
         fontSize: 14,
         fontFamily: "Jost-Regular",
-        fontWeight:'400'
+        fontWeight: '400'
     },
     spicy: {
         gap: 4
@@ -93,14 +93,18 @@ export const tableDetailstyles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 10,
         backgroundColor: "#333333",
-        alignItems: "center"
+        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'center'
     },
     buttTwo: {
         width: "97%",
         paddingVertical: 12,
         borderRadius: 10,
         backgroundColor: "#08D61D",
-        alignItems: "center"
+        alignItems: "center",
+        flexDirection: 'row',
+        justifyContent: 'center'
     },
     totals: {
         gap: 6,
@@ -134,30 +138,30 @@ export const tableDetailstyles = StyleSheet.create({
     textl: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     texto: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
         color: "#888888",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     totalprice: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
         color: "#0102FDBB",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     pay: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     cash: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
         color: "#888888",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     payment: {
         marginVertical: 30,
@@ -166,7 +170,7 @@ export const tableDetailstyles = StyleSheet.create({
     paymenttext: {
         fontSize: 14,
         fontFamily: "Jost-SemiBold",
-        fontWeight:'600'
+        fontWeight: '600'
     },
     payoption: {
         flexDirection: "row",
@@ -183,7 +187,7 @@ export const tableDetailstyles = StyleSheet.create({
         fontSize: 14,
         fontFamily: "Jost-Regular",
         color: "#5A5A5A",
-        fontWeight:'400'
+        fontWeight: '400'
     }
 
 })

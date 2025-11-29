@@ -24,25 +24,26 @@ const AppNavigator = () => {
     const user = true;
 
     let { state, dispatch } = useContext(UserContext)
-    useEffect(() => {
-        async function checkUserSession() {
+    async function checkUserSession() {
 
-            let _retrieveUserSession = await _retrieveStoreData('userSession_waiter')
-            if (_retrieveUserSession == null) {
-                console.log('user not logged in')
-                // setLoadingState(false)
-                dispatch({ type: 'SET_IS_LOGIN', payload: false })
-                dispatch({ type: 'SET_USER_DATA', payload: null })
+        let _retrieveUserSession = await _retrieveStoreData('userSession_waiter')
+        if (_retrieveUserSession == null) {
+            console.log('user not logged in')
+            // setLoadingState(false)
+            dispatch({ type: 'SET_IS_LOGIN', payload: false })
+            dispatch({ type: 'SET_USER_DATA', payload: null })
 
-            } else if (_retrieveUserSession != null) {
-                console.log('user login///', _retrieveUserSession);
-                // setLoadingState(false),
-                dispatch({ type: 'SET_IS_LOGIN', payload: true })
-                dispatch({ type: 'SET_USER_DATA', payload: _retrieveUserSession })
+        } else if (_retrieveUserSession != null) {
+            console.log('user login///', _retrieveUserSession);
+            // setLoadingState(false),
+            dispatch({ type: 'SET_IS_LOGIN', payload: true })
+            dispatch({ type: 'SET_USER_DATA', payload: _retrieveUserSession })
 
 
-            }
         }
+    }
+
+    useEffect(() => {
 
         checkUserSession()
     }, [])

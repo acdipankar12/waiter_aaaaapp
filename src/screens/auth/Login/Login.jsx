@@ -21,8 +21,12 @@ const Login = ({ navigation }) => {
         password: ''
     })
 
-    const {dispatch} = useContext(UserContext)
+    const { dispatch } = useContext(UserContext)
 
+    const [validateCheck, setValidatecheck] = useState({
+        email: false,
+        password: false
+    })
     const [loading, setloading] = useState(false)
 
     const validateFields = async () => {
@@ -31,14 +35,34 @@ const Login = ({ navigation }) => {
         let isvalid = false;
         let emailBorder = login_cre.email.trim() === '' ? 'red' : '';
         let passwordBorder = login_cre.password.trim() === '' ? 'red' : '';
-        setlogin_cre({
-            email: emailBorder,
-            password: passwordBorder
-        });
+        // setlogin_cre({
+        //     email: emailBorder,
+        //     password: passwordBorder
+        // });
         if (emailBorder === 'red' && passwordBorder === 'red') {
             isvalid = false;
+            setValidatecheck({
+                email: true,
+                password: true
+            })
             setloading(false)
-        } else {
+        } else if (emailBorder == 'red') {
+            setValidatecheck({
+                email: true,
+                password: false
+            })
+            setloading(false)
+        } else if (passwordBorder == 'red') {
+            isvalid = false;
+            setValidatecheck({
+                email: false,
+                password: true
+            })
+              setloading(false)
+
+        }
+
+        else {
             isvalid = true;
         }
         if (isvalid) {
@@ -59,7 +83,7 @@ const Login = ({ navigation }) => {
                     })
                     await _setStoreData('userSession_waiter', response.data);
                     await _setStoreData('_waiter_token', response.token);
-                     dispatch({ type: 'SET_USER_DATA', payload: response.data })
+                    dispatch({ type: 'SET_USER_DATA', payload: response.data })
                     setloading(false)
                     navigation.navigate("home")
                 }
@@ -82,13 +106,14 @@ const Login = ({ navigation }) => {
                     <Text style={loginStyles.subhead}>Signing to continue</Text>
                     <View style={loginStyles.inputWrap}>
                         <TouchableOpacity style={[loginStyles.inputBox, {
-                            borderColor: login_cre.email,
+                            borderColor: validateCheck?.email ? 'red' : '#FFFFFF',
                             borderWidth: 1
                         }]}>
                             <FontAwesomeIcon name="user" size={14} color="black" />
                             <TextInput
                                 style={[loginStyles.input, {
-
+                                    width: '100%',
+                                    //  backgroundColor:'green'
                                 }]}
                                 value={login_cre?.email}
                                 placeholderTextColor={"#888"}
@@ -97,14 +122,16 @@ const Login = ({ navigation }) => {
                             />
                         </TouchableOpacity>
                         <TouchableOpacity style={[loginStyles.inputBox, {
-                            borderColor: login_cre.password,
+                            borderColor: validateCheck?.password ? 'red' : '#ffffff',
                             borderWidth: 1
                         }]}>
                             {/* <FontAwesome5 name="user-alt" size={14} color="black" /> */}
                             <MaterialDesignIcons name="lock" size={14} color="black" />
 
                             <TextInput
-                                style={loginStyles.input}
+                                style={[loginStyles.input, {
+                                    width: '100%'
+                                }]}
                                 placeholderTextColor={"#888"}
                                 placeholder='Password'
                                 secureTextEntry

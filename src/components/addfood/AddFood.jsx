@@ -8,6 +8,7 @@ import IconAntDesign from 'react-native-vector-icons/AntDesign'
 import IconFontisto from 'react-native-vector-icons/Fontisto'
 import { UserContext } from '../../context/UserContext'
 import { _removeStoreData, _retrieveStoreData, _setStoreData } from '../../utils/store'
+import { FullWindowOverlay } from 'react-native-screens'
 
 const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }, ref) => {
     const navigation = useNavigation()
@@ -17,10 +18,76 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
     const [selectedChoiceIds, setSelectedChoiceIds] = useState([]); // array of selected choice ids
     const { setTempFood, tempFood, dispatch, state } = useContext(UserContext)
 
+    const [comment, setComment] = useState('')
+    const [toatlAmount, setTotalAmount] = useState(0)
     const addTempFood = (foodItem) => {
         setTempFood(prev => [...prev, foodItem]);
     };
 
+
+    // async function calculateTotalAmount() {
+    //     let _filterchoice = await food?.flatMap(item => item?.choices)
+    //     const result = _filterchoice.filter(item => selectedChoiceIds.includes(item.id));
+    //     const totalPrice = result.reduce((sum, item) => {
+    //         const q = item.qty ?? 1;     // if qty is null → treat as 1
+    //         return sum + item.price * q;
+    //     }, 0);
+    //     setTotalAmount(totalPrice)
+    //     console.log(result, totalPrice + selectedPrice, 'choices filtet////////////')
+    // }
+    async function calculateTotalAmount() {
+        try {
+            // ensure selected ids set for O(1) lookup
+            const idSet = new Set(selectedChoiceIds);
+
+            // collect all possible choices from common locations
+            const allChoices = (Array.isArray(food) ? food : []).flatMap(item => {
+                // choices directly on item
+                const direct = Array.isArray(item?.choices) ? item.choices : [];
+
+                // choices inside options -> e.g. item.options = [{ choices: [...] }, ...]
+                const fromOptions = Array.isArray(item?.options)
+                    ? item.options.flatMap(opt => Array.isArray(opt?.choices) ? opt.choices : [])
+                    : [];
+
+                // sets (sometimes choices are stored in sets)
+                const fromSets = Array.isArray(item?.sets) ? item.sets : [];
+
+                // combine
+                return [...direct, ...fromOptions, ...fromSets];
+            });
+
+            // filter only the chosen ones
+            const filtered = allChoices.filter(ch => ch && idSet.has(ch.id));
+
+            // compute total: price * qty (qty default 1 if null/undefined)
+            const totalPrice = filtered.reduce((sum, ch) => {
+                // parse price and qty to numbers; fallback to 0 for price
+                const price = Number(ch?.price) || 0;
+                // If qty is null/undefined -> default to 1. If it's 0 or numeric string, preserve it.
+                const qty = (ch?.qty === null || ch?.qty === undefined) ? 1 : Number(ch.qty) || 0;
+                return sum + price * qty;
+            }, 0);
+
+            // if you want to include selectedPrice in the final amount:
+            const grandTotal = totalPrice + (Number(selectedPrice) || 0);
+
+            // update state (you can change to setTotalAmount(grandTotal) if you don't want selectedPrice included)
+            setTotalAmount(grandTotal);
+
+            console.log('filtered choices:', filtered);
+            console.log('totalPrice:', totalPrice, 'selectedPrice:', selectedPrice, 'grandTotal:', grandTotal);
+            return { filtered, totalPrice, grandTotal };
+        } catch (err) {
+            console.error('calculateTotalAmount error', err);
+            setTotalAmount(0);
+            return { filtered: [], totalPrice: 0, grandTotal: 0 };
+        }
+    }
+
+    useEffect(() => {
+        calculateTotalAmount()
+    }, [food])
     console.log(food, 'optimndararar')
     useEffect(() => {
         console.log(selectedPrice, 'pice?????????????')
@@ -182,19 +249,23 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                 choices: selectedChoiceIds,
                 options: parentOptionIds
             },
-            sets: filteraddedchoices
+            sets: filteraddedchoices,
+            comment: comment
         }
         let _finalDataformat = {
             category: '',
             data: [dish_obj],
             extraminimum: '',
             id: selectedFood?.id,
+            quantity: 1
 
         }
 
         let _save_storageData = {
             table_number: selectedTablenumber,
-            dishdata: [_finalDataformat]
+            dishdata: [_finalDataformat],
+            track_tableids: null,
+            orderID: null
 
         }
         // await _removeStoreData('user_cart_data')
@@ -217,7 +288,7 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                         dishdata: [
                             ...(item.dishdata || []),          // existing dishdata
                             _finalDataformat      // new dish
-                        ]  
+                        ]
                     };
                 }
                 return item; // unchanged items
@@ -229,7 +300,7 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
         } else {
 
-            console.log('not exit table number')
+            console.log('not exit table number', _save_storageData)
             let _stateData = [
                 ...(state?.cart_data || []), // <- ensure we spread an array
                 _save_storageData             // make sure this is an object, not undefined
@@ -381,10 +452,12 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                     placeholder='Special Comment'
                     multiline={true}
                     numberOfLines={8}
+                    value={comment}
+                    onChangeText={(text) => setComment(text)}
 
                 />
                 <View style={addFoodStyles.footer}>
-                    <Text style={{ fontSize: 16, fontWeight: 700 }}>Total $11.90</Text>
+                    <Text style={{ fontSize: 16, fontWeight: 700 }}>Total ${Number(toatlAmount)?.toFixed(2)}</Text>
                     <TouchableOpacity onPress={() => {
                         table_modalopen(true)
                         // addTempFood({

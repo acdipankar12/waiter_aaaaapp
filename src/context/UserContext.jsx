@@ -78,8 +78,13 @@ export const ContextProvider = ({ children }) => {
                 return {
                     ...state,
                     cart_data: state.cart_data.filter(
-                        item => item.id !== action.payload?.id
+                        item => item.table_number !== action.payload
                     )
+                };
+            case 'CART_DATA_UPDATE_SEND_TO_KITCHEN':
+                return {
+                    ...state,
+                    cart_data: action?.payload
                 };
             case 'SET_CHOICE_DATA':
                 return {

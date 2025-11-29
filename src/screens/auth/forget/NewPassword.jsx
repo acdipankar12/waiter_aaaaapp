@@ -109,7 +109,9 @@ const NewPassword = () => {
                             <TextInput
                                 placeholderTextColor={"#888"}
                                 placeholder='Enter Your old Password'
-                                style={forgetNewStyles.input}
+                                style={[forgetNewStyles.input ,{
+                                    // width:'100%'
+                                }]}
                                 secureTextEntry={secured ? false : true}
                                 value={field_data?.old_password}
                                 onChangeText={(t) => setfield_data({
@@ -130,7 +132,9 @@ const NewPassword = () => {
                             <TextInput
                                 placeholderTextColor={"#888"}
                                 placeholder='Enter Your New Password'
-                                style={forgetNewStyles.input}
+                                style={[forgetNewStyles.input ,{
+                                    // width:'100%'
+                                }]}
                                 secureTextEntry={secured ? false : true}
                                 value={field_data?.password}
                                 onChangeText={(t) => setfield_data({

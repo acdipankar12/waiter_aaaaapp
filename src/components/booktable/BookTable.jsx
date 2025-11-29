@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { UserContext } from '../../context/UserContext';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber, sanitize_dishData }) => {
+const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber, sanitize_dishData, setOpenModal }) => {
     const [open, setOpen] = useState(false);
     const [table, settable] = useState(selectedtablenumber);
     const navigation = useNavigation()
@@ -71,6 +71,10 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                                 if (typeof sanitize_dishData === 'function') {
                                     // console.log('tagle' ,table)
                                     await sanitize_dishData()
+                                    setOpenModaltable(false)
+                                    setOpenModal(false)
+                                    navigation.navigate('my-cart')
+
                                 }
                             } catch (e) {
                                 console.log('Error calling sanitize_dishData', e)
@@ -82,7 +86,7 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                                 text1: "Success",
                                 text2: `Table No ${table} is booked`
                             })
-                            console.log(cart)
+                            // console.log(cart)
                             // navigation.navigate("table-details", {
                             //     order: false,
                             //     addfood: true,

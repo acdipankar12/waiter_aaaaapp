@@ -13,14 +13,15 @@ import EntypoIcon from 'react-native-vector-icons/Entypo';
 
 import BookTable from '../../components/booktable/BookTable'
 import { foodsdata } from '../../data/foods'
-// import React, { useContext, useEffect, useRef, useState } from 'react'
+// import React, { useContext, useEffect, useRef, useState } from 'react
 import { UserContext } from '../../context/UserContext'
 import { apiRequest } from '../../utils/apiService'
-import { _retrieveStoreData } from '../../utils/store'
+import { _retrieveStoreData, navigationRef } from '../../utils/store'
 import FoodCardSkeleton from '../../components/foodcard/foodskelaton'
 import CategoriesSkeleton from '../../components/categories/CategoriesSkelatomn'
 import Modal from "react-native-modal";
 import SubCategories from '../../components/categories/subCategory'
+import { useNavigation } from '@react-navigation/native'
 
 const Home = () => {
     const [openModal, setOpenModal] = useState(false)
@@ -35,6 +36,7 @@ const Home = () => {
         'Sweet Tooth',
     ];
 
+    const navigation = useNavigation()
     const [categoriesData, setCategoriesData] = useState([])
     const [loading, setloading] = useState(false)
     const [subcategoryListData, setSubcategorylistData] = useState([])
@@ -71,10 +73,14 @@ const Home = () => {
         }
     }
 
+    useEffect(async () => {
+        let _usertoken = await _retrieveStoreData('_waiter_token')
+        console.log(_usertoken, 'omekk')
+
+    }, [])
     async function fetchDishOptionData(dishid) {
         try {
             let _usertoken = await _retrieveStoreData('_waiter_token')
-
             let apiRes = await apiRequest('waiter/get-business-dish-details', 'post', {
                 lang_id: '1',
                 dish_id: dishid
@@ -287,7 +293,10 @@ const Home = () => {
                             renderItem={({ item, index }) => (
                                 <Categories
                                     item={item}
-                                    isSelected={selected?.id == item?.id}
+                                    isSelected={
+
+
+                                        selected?.id == item?.id}
                                     onPress={() => {
                                         // select category and display its children (reset drill stack)
                                         setActiveCategory(item)
@@ -324,7 +333,9 @@ const Home = () => {
                                     renderItem={({ item, index }) => (
                                         <SubCategories
                                             item={item}
-                                            isSelected={selected?.id == item?.id}
+                                            isSelected={
+
+                                                selected?.id == item?.id}
                                             onPress={() => {
                                                 // determine actual children from API shape
                                                 const children = item?.childrenCategories ?? item?.children_categories ?? []
@@ -460,7 +471,12 @@ const Home = () => {
                                                 )}
                                                 keyExtractor={(item) => item?.id?.toString()}
                                                 showsHorizontalScrollIndicator={false}
-                                                contentContainerStyle={homeStyles.foodSection}
+                                                contentContainerStyle={[
+                                                    homeStyles.foodSection,
+                                                    {
+                                                        paddingBottom: 150
+                                                    }
+                                                ]}
                                                 ListEmptyComponent={() => {
                                                     <View>
                                                         <Text style={{
@@ -535,6 +551,7 @@ const Home = () => {
                         // onBackdropPress={() => setOpenModal(false)}
                         >
                             <BookTable
+                                setOpenModal={setOpenModal}
                                 setselectedTablenumber={setselectedTablenumber}
                                 selectedtablenumber={selectedTablenumber}
                                 setOpenModaltable={setOpenModaltable}
@@ -546,8 +563,8 @@ const Home = () => {
                 )}
             </SafeAreaView>
             {/* </ScrollView> */}
-            <TouchableOpacity onPress={() => setOpenModaltable(true)} style={homeStyles.cartFloat}>
-                {tempFood?.length === 0 ? null : <View style={homeStyles.cartcount}><Text>{tempFood?.length}</Text></View>}
+            <TouchableOpacity onPress={() => navigation.navigate('my-cart')} style={homeStyles.cartFloat}>
+                {tempFood?.length === 0 ? null : <View style={homeStyles.cartcount}><Text>{state?.cart_data?.length}</Text></View>}
                 <FontAwesomeIcon name="shopping-cart" size={34} color="#fff" />
             </TouchableOpacity>
 

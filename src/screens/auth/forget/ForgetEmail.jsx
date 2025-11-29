@@ -78,7 +78,10 @@ const ForgetEmail = () => {
                         ]}>
                             <FontAwesomeIcon name="user" size={14} color="black" />
                             <TextInput
-                                style={forgetEmailStyles.input}
+                                style={[forgetEmailStyles.input ,{
+                                    backgroundColor:'100%',
+                                    // backgroundColor:'green'
+                                }]}
                                 placeholderTextColor={"#888"}
                                 placeholder='Email'
                                 onChangeText={(text) => setEmail(text)}
