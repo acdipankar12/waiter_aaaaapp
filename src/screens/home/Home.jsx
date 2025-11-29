@@ -330,49 +330,53 @@ const Home = () => {
                                     horizontal
                                     ref={subcategoriesRef}
                                     data={currentChildren}
-                                    renderItem={({ item, index }) => (
-                                        <SubCategories
-                                            item={item}
-                                            isSelected={
+                                    renderItem={({ item, index }) => {
+                                        const isAll = item?.id === 0
+                                        const isSelected = isAll 
+                                            ? (selected?.id === activeCategory?.id) 
+                                            : (selected?.id === item?.id)
+                                        return (
+                                            <SubCategories
+                                                item={item}
+                                                isSelected={isSelected}
+                                                onPress={() => {
+                                                    // determine actual children from API shape
+                                                    const children = item?.childrenCategories ?? item?.children_categories ?? []
+                                                    const obj = item?.name ? JSON.parse(item.name) : {}
+                                                    const label = obj[Object.keys(obj)[0]]
+                                                    const isAll = item?.id === 0
 
-                                                selected?.id == item?.id}
-                                            onPress={() => {
-                                                // determine actual children from API shape
-                                                const children = item?.childrenCategories ?? item?.children_categories ?? []
-                                                const obj = item?.name ? JSON.parse(item.name) : {}
-                                                const label = obj[Object.keys(obj)[0]]
-                                                const isAll = item?.id === 0
-
-                                                if (children && children.length > 0) {
-                                                    // push current children to stack so Back can restore
-                                                    setChildrenStack(prev => [...prev, currentChildren])
-                                                    // add an "All" option at this nested level as first item
-                                                    const nextChildren = [
-                                                        { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
-                                                        ...children
-                                                    ]
-                                                    setCurrentChildren(nextChildren)
-                                                    if (selectedCateActive.includes(label) == false) {
-                                                        setSelectedCategoryactive(prev => [...prev, label])
-                                                    }
-
-                                                    setSelected(item)
-                                                    autoScrollSubcategories(index)
-                                                } else {
-                                                    // leaf selected: if it's the "All" placeholder, use activeCategory to fetch
-                                                    if (isAll && activeCategory) {
-                                                        setSelected(activeCategory)
-                                                    } else {
-                                                        setSelected(item)
+                                                    if (children && children.length > 0) {
+                                                        // push current children to stack so Back can restore
+                                                        setChildrenStack(prev => [...prev, currentChildren])
+                                                        // add an "All" option at this nested level as first item
+                                                        const nextChildren = [
+                                                            { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                                            ...children
+                                                        ]
+                                                        setCurrentChildren(nextChildren)
                                                         if (selectedCateActive.includes(label) == false) {
                                                             setSelectedCategoryactive(prev => [...prev, label])
                                                         }
+
+                                                        setSelected(item)
+                                                        autoScrollSubcategories(index)
+                                                    } else {
+                                                        // leaf selected: if it's the "All" placeholder, use activeCategory to fetch
+                                                        if (isAll && activeCategory) {
+                                                            setSelected(activeCategory)
+                                                        } else {
+                                                            setSelected(item)
+                                                            if (selectedCateActive.includes(label) == false) {
+                                                                setSelectedCategoryactive(prev => [...prev, label])
+                                                            }
+                                                        }
+                                                        autoScrollSubcategories(index)
                                                     }
-                                                    autoScrollSubcategories(index)
-                                                }
-                                            }}
-                                        />
-                                    )}
+                                                }}
+                                            />
+                                        )
+                                    }}
                                     keyExtractor={(item) => item?.id?.toString()}
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={{
