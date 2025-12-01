@@ -20,7 +20,9 @@ const DeleteAcc = ({ setDeleteModal }) => {
                         <Text style={{ fontSize: 16, fontFamily: "Jost_600SemiBold", color: "#fff" }}>Yes</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-
+                        onPress={() => {
+                            setDeleteModal(false)
+                        }}
                         style={{ backgroundColor: "#0102FD", paddingVertical: 10, paddingHorizontal: 30, borderRadius: 10 }}
                     >
                         <Text style={{ fontSize: 16, fontFamily: "Jost_600SemiBold", color: "#fff" }}>No</Text>

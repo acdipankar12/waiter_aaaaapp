@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, SectionList } from 'react-native'
+import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, SectionList, Image } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { ScrollView } from 'react-native'
 import Header from '../../components/header/Header'
@@ -56,7 +56,7 @@ const Home = () => {
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
 
-    const [selectedTablenumber, setselectedTablenumber] = useState(1)
+    const [selectedTablenumber, setselectedTablenumber] = useState(0)
     // ref to access AddFood's imperative handle (exposed sanitize function)
     const addFoodRef = useRef(null)
     const AddFoodModal = async (f) => {
@@ -155,6 +155,7 @@ const Home = () => {
                     setActiveCategory(firstCat)
                     setSelected(firstCat)
                     // set the current children for the first category (handle both keys)
+                    // if(firstCat?.children_categories?.length != 0)
                     const children = [
                         { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
                         ...(firstCat?.childrenCategories ?? firstCat?.children_categories ?? [])
@@ -318,22 +319,28 @@ const Home = () => {
                             keyExtractor={(item) => item?.id?.toString()}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{
-                                paddingBottom: 10
+                                paddingBottom: 10,
+                                // flexGrow:1
+                                // paddingVertical:20
+                                // backgroundColor:'red'
                             }}
                         />
                     )}
 
-                    <View>
+                    <View style={{
+                        // paddingTop: 8,
+                        // backgroundColor:'green'
+                    }}>
                         {
                             !categoriesLoaDING && (
                                 <FlatList
                                     horizontal
                                     ref={subcategoriesRef}
-                                    data={currentChildren}
+                                    data={currentChildren?.length != 0 ? currentChildren : []}
                                     renderItem={({ item, index }) => {
                                         const isAll = item?.id === 0
-                                        const isSelected = isAll 
-                                            ? (selected?.id === activeCategory?.id) 
+                                        const isSelected = isAll
+                                            ? (selected?.id === activeCategory?.id)
                                             : (selected?.id === item?.id)
                                         return (
                                             <SubCategories
@@ -380,7 +387,9 @@ const Home = () => {
                                     keyExtractor={(item) => item?.id?.toString()}
                                     showsHorizontalScrollIndicator={false}
                                     contentContainerStyle={{
-                                        paddingBottom: 10,
+                                        // paddingBottom: 10,
+                                        // paddingTop: 6,
+                                        // flexGrow:0
                                     }}
                                 />
                             )
@@ -416,6 +425,7 @@ const Home = () => {
                         justifyContent: 'space-between',
                         //    paddingHorizontal:20
                     }}>
+                        <View></View>
                         {/* <View style={{
                             maxWidth: '80%'
                         }} >
@@ -458,68 +468,63 @@ const Home = () => {
                     {
                         !loading && (
                             <>
-                                {
-                                    dishesListData?.length > 0 ? (
-                                        <>
-                                            <FlatList
-                                                // horizontal
-                                                // ref={flatListRef}
-                                                data={dishesListData}
-                                                renderItem={({ item }) => (
 
-                                                    <FoodCard
-                                                        key={item.id}
-                                                        onPress={() => AddFoodModal(item)}
-                                                        food={item}
-                                                    />
-                                                )}
-                                                keyExtractor={(item) => item?.id?.toString()}
-                                                showsHorizontalScrollIndicator={false}
-                                                contentContainerStyle={[
-                                                    homeStyles.foodSection,
-                                                    {
-                                                        paddingBottom: 150
-                                                    }
-                                                ]}
-                                                ListEmptyComponent={() => {
-                                                    <View>
+                                <>
+                                    <FlatList
+                                        // horizontal
+                                        // ref={flatListRef}
+                                        data={dishesListData}
+                                        renderItem={({ item }) => (
+
+                                            <FoodCard
+                                                key={item.id}
+                                                onPress={() => AddFoodModal(item)}
+                                                food={item}
+                                            />
+                                        )}
+                                        keyExtractor={(item) => item?.id?.toString()}
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={[
+                                            homeStyles.foodSection,
+                                            {
+                                                paddingBottom: 130,
+                                                // paddingTop:10
+                                                // backgroundColor
+                                            }
+                                        ]}
+                                        ListEmptyComponent={() => {
+                                            return (
+                                                <>
+                                                    <View style={{
+                                                        // justifyContent:'center',
+                                                        alignItems: 'center',
+                                                        height: '100%'
+                                                    }}>
+
+                                                        <Image
+                                                            source={require('../../../assets/emptydish.jpg')}
+                                                            style={{
+                                                                width: 120,
+                                                                height: 110,
+                                                                marginTop: 70
+                                                            }}
+                                                            resizeMethod='auto'
+                                                            resizeMode='contain'
+                                                        />
                                                         <Text style={{
-                                                            fontSize: 25,
+                                                            fontSize: 19,
                                                             color: '#000000',
                                                             fontWeight: '600'
                                                         }}> No Dish Found !</Text>
                                                     </View>
-                                                }}
+                                                </>
+                                            )
 
-                                            />
-                                        </>
-                                    )
-                                        :
-                                        (
-                                            <> </>
-                                            // <SectionList
-                                            //     sections={subcategoryListData.map(food => ({
-                                            //         title: food.name,
-                                            //         data: food.dishes || []
-                                            //     }))}
-                                            //     keyExtractor={(item) => item.id?.toString()}
-                                            //     renderSectionHeader={({ section: { title } }) => (
-                                            //         <Text style={{ fontWeight: "500", fontSize: 15 }}>{title}</Text>
-                                            //     )}
-                                            //     renderItem={({ item }) => (
+                                        }}
 
-                                            //         <FoodCard
-                                            //             key={item.id}
-                                            //             onPress={() => AddFoodModal(item)}
-                                            //             food={item}
-                                            //         />
-                                            //     )}
-                                            //     contentContainerStyle={homeStyles.foodSection}
-                                            //     stickySectionHeadersEnabled={false}
-                                            //     showsVerticalScrollIndicator={false}
-                                            // />
-                                        )
-                                }
+                                    />
+                                </>
+
 
                             </>
 
@@ -544,7 +549,7 @@ const Home = () => {
                         selectedFood={selectedfood}
                         table_modalopen={setOpenModaltable}
                         selectedTablenumber={selectedTablenumber}
-                          setselectedTablenumber={setselectedTablenumber}
+                        setselectedTablenumber={setselectedTablenumber}
 
                     />
                 </Modal>

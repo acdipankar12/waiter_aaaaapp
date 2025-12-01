@@ -26,7 +26,7 @@ const SubCategories = ({ item, isSelected, onPress }) => {
                     <FeatherIcon
                         name='chevron-down'
                         color={isSelected ? '#0000ff' : '#000000'}
-                        size={20}
+                        size={16}
                     />
                 )
             }

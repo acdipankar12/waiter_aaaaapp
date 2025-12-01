@@ -95,7 +95,8 @@ const TableDetails = ({ route }) => {
     }, [state])
 
 
-    const [paymentMethods, setPaymentmethods] = useState(null)
+    const [paymentMethods, setPaymentmethods] = useState([])
+    const [addPaymentMethod, setAddPaymentMethos] = useState(null)
     console.log(state?.user_data, 'busines detals///')
     function refineItemOptions(item) {
         const { options, relation, sets } = item;
@@ -237,12 +238,22 @@ const TableDetails = ({ route }) => {
 
     // complete the order table 
     async function completeOrder(_orderID) {
+        console.log(addPaymentMethod, 'payment methos////')
+        if (addPaymentMethod == null) {
+            Toast.show({
+                type: 'error',
+                text1: "Please choose payment method."
+            })
+            return
+        }
         setCompleteLoading(true)
         let _usertoken = await _retrieveStoreData('_waiter_token')
 
         try {
             await apiRequest('waiter/order-complete', 'post', {
-                id: _orderID
+                id: _orderID,
+                payment_id: addPaymentMethod?.pid,
+                paymentmethod: addPaymentMethod,
             }, {
 
                 "Content-Type": "application/json",
@@ -293,8 +304,8 @@ const TableDetails = ({ route }) => {
 
         }).then((res) => {
             if (res?.status) {
-                let cashobje = res?.data?.find(item => item?.name == 'cash')
-                setPaymentmethods(cashobje)
+                // let cashobje = res?.data?.find(item => item?.name == 'cash')
+                setPaymentmethods(res?.data)
             }
             console.log(res, 'payment drtailssse/////////////')
         })
@@ -349,8 +360,8 @@ const TableDetails = ({ route }) => {
             order_type: "1",
             driverid: "",
             comments: "",
-            payment_id: paymentMethods?.pid,
-            paymentmethod: paymentMethods,
+            payment_id: null,
+            paymentmethod: null,
             sourcetype: "",
             sourcetype_name: "",
             cartdish: {
@@ -608,7 +619,7 @@ const TableDetails = ({ route }) => {
                                                                         return (
                                                                             <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
                                                                                 <View style={{ height: 6, width: 6, borderRadius: 3, backgroundColor: "#08D61D" }}></View>
-                                                                                <Text style={{ fontFamily: "Jost_500Medium" }}>{choise?.choice_name} {choise?.qty != null ? `x ${choise?.qty}` : ''} <Text
+                                                                                <Text style={{ fontFamily: "Jost_500Medium" ,paddingLeft:4 }}>{choise?.choice_name} {choise?.qty != null ? `x ${choise?.qty}` : ''} <Text
                                                                                     style={{ fontFamily: "Jost_500Medium", color: "#0102FD" }}
                                                                                 >$ {choise?.qty != null ? choise?.price * choise?.qty : choise?.price}</Text></Text>
                                                                             </View>
@@ -656,8 +667,222 @@ const TableDetails = ({ route }) => {
                                             <Text style={tableDetailstyles.textl}>Grand Total</Text>
                                             <Text style={tableDetailstyles.totalprice}>${Number(grandTotalvalue + taxdata?.tax_price).toFixed(2)}</Text>
                                         </View>
-                                        <Text style={tableDetailstyles.pay}>Payment</Text>
-                                        <Text style={tableDetailstyles.cash}>Cash</Text>
+
+                                        {
+                                            route?.params?.order_details?.type != undefined && selectedTableOrderDetails && (
+                                                <>
+                                                    <Text style={tableDetailstyles.pay}>Payment</Text>
+                                                    {/* {
+                                                        selectedTableOrderDetails?.payment_id == 1 && ( */}
+                                                    <View style={{
+                                                        justifyContent: 'space-between',
+                                                        flexDirection: 'row'
+                                                    }}>
+                                                        <Text style={tableDetailstyles.cash}>Cash / Card</Text>
+                                                        <TouchableOpacity style={{
+                                                            width: 21,
+                                                            height: 21,
+                                                            borderRadius: 100,
+                                                            borderWidth: 1,
+                                                            borderColor: '#0102FD',
+                                                            padding: 2,
+                                                            justifyContent: 'center',
+                                                            alignItems: 'center'
+                                                            // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                        }}
+
+                                                        >
+                                                            <TouchableOpacity
+
+                                                                style={{
+                                                                    width: 15,
+                                                                    height: 15,
+                                                                    borderRadius: 100,
+                                                                    borderWidth: 1,
+                                                                    borderColor: '#0102FD',
+                                                                    backgroundColor: '#0102FD'
+                                                                }}>
+
+                                                            </TouchableOpacity>
+
+
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                    {/* )
+                                                    } */}
+
+                                                </>
+                                            )
+                                        }
+                                        {
+                                            mainfilteritemCartTable?.track_tableids != null || checkanyitemsAddedaftersendtokitchen == false && (
+                                                <>
+                                                    <Text style={tableDetailstyles.pay}>Payment</Text>
+                                                    <View style={{
+                                                        justifyContent: 'space-between',
+                                                        flexDirection: 'row'
+                                                    }}>
+                                                        <Text style={tableDetailstyles.cash}>Cash / Card</Text>
+                                                        {
+                                                            addPaymentMethod != null ? (
+                                                                <TouchableOpacity style={{
+                                                                    width: 21,
+                                                                    height: 21,
+                                                                    borderRadius: 100,
+                                                                    borderWidth: 1,
+                                                                    borderColor: '#0102FD',
+                                                                    padding: 2,
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center'
+                                                                    // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                }}
+
+                                                                >
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+                                                                            let _cashPayment = paymentMethods?.filter(item => item?.name == 'cash')
+                                                                            if (addPaymentMethod == null) {
+                                                                                setAddPaymentMethos(_cashPayment)
+                                                                            } else {
+                                                                                setAddPaymentMethos(null)
+                                                                            }
+
+                                                                        }}
+                                                                        style={{
+                                                                            width: 15,
+                                                                            height: 15,
+                                                                            borderRadius: 100,
+                                                                            borderWidth: 1,
+                                                                            borderColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF',
+                                                                            backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                        }}>
+
+                                                                    </TouchableOpacity>
+
+
+                                                                </TouchableOpacity>
+                                                            )
+                                                                : (
+                                                                    <TouchableOpacity style={{
+                                                                        width: 21,
+                                                                        height: 21,
+                                                                        borderRadius: 100,
+                                                                        borderWidth: 1,
+                                                                        borderColor: '#0102FD',
+                                                                        padding: 2,
+                                                                        justifyContent: 'center',
+                                                                        alignItems: 'center'
+                                                                        // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                    }}
+                                                                        onPress={() => {
+                                                                            let _cashPayment = paymentMethods?.filter(item => item?.name == 'cash')
+                                                                            if (addPaymentMethod == null) {
+                                                                                setAddPaymentMethos(_cashPayment)
+                                                                            } else {
+                                                                                setAddPaymentMethos(null)
+                                                                            }
+
+                                                                        }}
+                                                                    ></TouchableOpacity>
+                                                                )
+
+                                                        }
+
+                                                    </View>
+                                                </>
+
+                                            )
+                                        }
+
+                                        {
+                                            (!checkanyitemsAddedaftersendtokitchen && mainfilteritemCartTable?.track_tableids != null) && (
+                                                <>
+                                                    <Text style={tableDetailstyles.cash}>Cash / Card</Text>
+                                                    <View style={{
+                                                        justifyContent: 'space-between',
+                                                        flexDirection: 'row'
+                                                    }}>
+                                                        <Text style={tableDetailstyles.cash}>Cash / Card</Text>
+                                                        {
+                                                            addPaymentMethod != null ? (
+                                                                <TouchableOpacity style={{
+                                                                    width: 21,
+                                                                    height: 21,
+                                                                    borderRadius: 100,
+                                                                    borderWidth: 1,
+                                                                    borderColor: '#0102FD',
+                                                                    padding: 2,
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center'
+                                                                    // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                }}
+
+                                                                >
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+                                                                            let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
+                                                                            if (addPaymentMethod == null) {
+                                                                                setAddPaymentMethos(_cashPayment)
+                                                                            } else {
+                                                                                setAddPaymentMethos(null)
+                                                                            }
+
+                                                                        }}
+                                                                        style={{
+                                                                            width: 15,
+                                                                            height: 15,
+                                                                            borderRadius: 100,
+                                                                            borderWidth: 1,
+                                                                            borderColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF',
+                                                                            backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                        }}>
+
+                                                                    </TouchableOpacity>
+
+
+                                                                </TouchableOpacity>
+                                                            )
+                                                                : (
+                                                                    <TouchableOpacity style={{
+                                                                        width: 21,
+                                                                        height: 21,
+                                                                        borderRadius: 100,
+                                                                        borderWidth: 1,
+                                                                        borderColor: '#0102FD',
+                                                                        padding: 2,
+                                                                        justifyContent: 'center',
+                                                                        alignItems: 'center'
+                                                                        // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
+                                                                    }}
+                                                                        onPress={() => {
+                                                                            let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
+                                                                            if (addPaymentMethod == null) {
+                                                                                setAddPaymentMethos(_cashPayment)
+                                                                            } else {
+                                                                                setAddPaymentMethos(null)
+                                                                            }
+
+                                                                        }}
+                                                                    ></TouchableOpacity>
+                                                                )
+
+                                                        }
+
+                                                    </View>
+                                                </>
+
+                                            )
+                                        }
+                                        {/* <View>
+                                            <Text style={tableDetailstyles.cash}>Paypal</Text>
+                                        </View>
+                                        <View>
+                                            <Text style={tableDetailstyles.cash}>Stripe</Text>
+                                        </View>
+                                        <View>
+                                            <Text style={tableDetailstyles.cash}>Rozarpay</Text>
+                                        </View> */}
+
                                     </View>
                                 }
                                 {/* {

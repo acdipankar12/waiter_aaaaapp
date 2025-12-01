@@ -9,10 +9,11 @@ export const orderListstyles = StyleSheet.create({
     orderBox: {
         borderColor: "#cccccc",
         borderWidth: 1,
-        padding: 8,
+        padding: 10,
         borderRadius: 10,
         backgroundColor: "#F8FFFC",
-        gap: 13
+        gap: 13,
+        // top:14
     },
     head: {
         marginTop: 10,
@@ -43,7 +44,7 @@ export const orderListstyles = StyleSheet.create({
     butttext: {
         color: "#fff",
         fontFamily: "Jost-SemiBold",
-        fontWeight:'600'
+        fontWeight: '600'
     }
 
 })

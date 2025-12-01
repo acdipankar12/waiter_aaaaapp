@@ -35,6 +35,9 @@ const FoodCard = ({ onPress, food }) => {
 
 
 
+
+                </View>
+                <View>
                     <View style={[styles.actions]}>
                         <TouchableOpacity style={styles.iconButton}>
                             <AntDesignIcon name="appstore1" size={16} color="#fff" style={styles.ico1} />
@@ -66,6 +69,7 @@ const styles = StyleSheet.create({
         borderColor: "#CCCCCC80",
         borderWidth: 1,
         alignItems: 'flex-start',
+        maxWidth: '100%'
     },
     image: {
         width: 70,
@@ -99,14 +103,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'nowrap',
-        marginTop: 4
+        marginTop: 4,
+        maxWidth: '100%'
+
+
+         
     },
     description: {
         color: '#333333',
         fontSize: 13,
         flexShrink: 1,
         fontWeight: "400",
-        maxWidth: '80%',
+        width: '100%',
     },
     actions: {
         flexDirection: 'row',

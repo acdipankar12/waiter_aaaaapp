@@ -9,6 +9,9 @@ import { UserContext } from '../../context/UserContext';
 import { apiRequest } from '../../utils/apiService';
 import { _retrieveStoreData } from '../../utils/store';
 import moment from 'moment';
+import AntDesignIcon from 'react-native-vector-icons/AntDesign';
+import Ionicons from "react-native-vector-icons/Ionicons";
+
 const OrderList = () => {
     const navigation = useNavigation()
     const { cart } = useContext(UserContext)
@@ -85,49 +88,59 @@ const OrderList = () => {
                                 renderItem={({ item }) => {
 
                                     return (
-                                        <View style={orderListstyles.orderBox}>
-                                            <View style={orderListstyles.head}>
-                                                <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 17 }}>{item?.resturant}</Text>
-                                                <View style={orderListstyles.headtiming}>
-                                                    <View style={orderListstyles.flexRow}>
-                                                        {/* <Ionicons name="time-outline" size={16} color="#0102FD" /> */}
-                                                        <Text
-                                                            style={{ fontFamily: "Jost_400Regular", color: "#888888" }}
-                                                        >
-                                                            {moment(item?.date).format('LT')}
-                                                        </Text>
-                                                    </View>
-                                                    <View style={orderListstyles.flexRow}>
-                                                        {/* <AntDesign name="calendar" size={16} color="#0102FD" /> */}
-                                                        <Text style={{ fontFamily: "Jost_400Regular", color: "#888888" }}>
-                                                            {moment(item?.date).format('DD/MM/YYYY')}
-                                                        </Text>
+                                        <View style={{
+                                            // top
+                                        }}> 
+                                            <View style={orderListstyles.orderBox}>
+                                                <View style={orderListstyles.head}>
+                                                    <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 17 }}>{item?.resturant}</Text>
+                                                    <View style={orderListstyles.headtiming}>
+                                                        <View style={orderListstyles.flexRow}>
+                                                            <Ionicons name="time-outline" size={16} color="#0102FD" />
+                                                            <Text
+                                                                style={{ fontFamily: "Jost_400Regular", color: "#888888" }}
+                                                            >
+                                                                {moment(item?.date).format('LT')}
+                                                            </Text>
+                                                        </View>
+                                                        <View style={orderListstyles.flexRow}>
+                                                            <AntDesignIcon name="calendar" size={16} color="#0102FD" />
+                                                            <Text style={{ fontFamily: "Jost_400Regular", color: "#888888" }}>
+                                                                {moment(item?.date).format('DD/MM/YYYY')}
+                                                            </Text>
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                            <View style={orderListstyles.second}>
-                                                <View
-                                                    style={orderListstyles.flexRow}
-                                                >
-                                                    <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 15 }}>
-                                                        Order Id
-                                                    </Text>
-                                                    <Text style={{ fontFamily: "Jost_400Regular", fontSize: 15, color: "#888888" }}>
-                                                        #{item?.id}
-                                                    </Text>
+                                                <View style={orderListstyles.second}>
+                                                    <View
+                                                        style={orderListstyles.flexRow}
+                                                    >
+                                                        <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 15 }}>
+                                                            Order Id
+                                                        </Text>
+                                                        <Text style={{ fontFamily: "Jost_400Regular", fontSize: 15, color: "#888888" }}>
+                                                            #{item?.id}
+                                                        </Text>
+                                                    </View>
+                                                    <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 14, color: "#0102FD" }}>${Number(item?.total)?.toFixed(2)}</Text>
                                                 </View>
-                                                <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 14, color: "#0102FD" }}>${Number(item?.total)?.toFixed(2)}</Text>
+                                                <TouchableOpacity onPress={() => {
+                                                    navigation.navigate("table-details", {
+                                                        order_details: {
+                                                            type: 'orderdetails',
+                                                            orderID: item?.id
+                                                        }
+                                                    })
+                                                }} style={orderListstyles.butt}>
+                                                    <Text style={orderListstyles.butttext}>View Order</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                            <TouchableOpacity onPress={() => {
-                                                navigation.navigate("table-details", {
-                                                    order_details: {
-                                                        type: 'orderdetails',
-                                                        orderID: item?.id
-                                                    }
-                                                })
-                                            }} style={orderListstyles.butt}>
-                                                <Text style={orderListstyles.butttext}>View Order</Text>
-                                            </TouchableOpacity>
+                                            <View style={{
+                                                borderWidth:.5,
+                                                borderColor:'#D9D9D9',
+                                                top:10
+                                            }}>
+                                            </View>
                                         </View>
                                     )
 
@@ -140,7 +153,7 @@ const OrderList = () => {
                                     {
                                         paddingBottom: 150,
                                         marginVertical: 12,
-                                        gap: 15
+                                        gap: 18
                                     }
                                 }
                                 ListEmptyComponent={() => {

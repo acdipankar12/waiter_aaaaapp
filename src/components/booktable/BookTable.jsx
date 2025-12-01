@@ -45,7 +45,7 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                     <Pressable style={styles.drop} onPress={() => {
                         setOpen(!open)
                     }}>
-                        <Text style={styles.placeholder}>{table == 0 ? "Select A Table" : `Select Table ${selectedtablenumber}`}</Text>
+                        <Text style={styles.placeholder}>{selectedtablenumber == 0 ? "Select One" : `Select Table ${selectedtablenumber}`}</Text>
                         <FeatherIcon name="chevron-down" size={18} color="#888888" />
                     </Pressable>
 

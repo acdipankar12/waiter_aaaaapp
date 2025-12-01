@@ -5,7 +5,7 @@ export const homeStyles = StyleSheet.create({
         marginTop: 10,
     },
     foodSection: {
-        marginVertical: 12,
+        // marginVertical: 12,
         gap: 0
     },
     foodsbox: {
