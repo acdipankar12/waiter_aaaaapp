@@ -10,7 +10,7 @@ import { UserContext } from '../../context/UserContext'
 import { _removeStoreData, _retrieveStoreData, _setStoreData } from '../../utils/store'
 import { FullWindowOverlay } from 'react-native-screens'
 
-const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber }, ref) => {
+const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber ,setselectedTablenumber}, ref) => {
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
@@ -198,30 +198,91 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
             const wasChecked = !!prev[choice.id];
             const nowChecked = !wasChecked;
 
-            // Update qty in option data: when checked, ensure qty at least 1; when unchecked, reset to 0
-            if (nowChecked) {
-                updateOptionData(prevData =>
-                    prevData.map(item => ({
-                        ...item,
-                        choices: item.choices.map(c =>
-                            c.id === choice.id ? { ...c, qty: (c.qty && c.qty > 0) ? c.qty : 1 } : c
-                        )
-                    }))
-                );
-                setSelectedChoiceIds(prev => Array.from(new Set([...prev, choice.id])));
-            } else {
-                updateOptionData(prevData =>
-                    prevData.map(item => ({
-                        ...item,
-                        choices: item.choices.map(c =>
-                            c.id === choice.id ? { ...c, qty: 0 } : c
-                        )
-                    }))
-                );
-                setSelectedChoiceIds(prev => prev.filter(id => id !== choice.id));
-            }
+            // For items where type !== 1, only allow single selection (radio button behavior)
+            if (Number(choice?.type) !== 1) {
+                if (nowChecked) {
+                    // Find the option that contains this choice
+                    const parentOption = food?.find(option =>
+                        option?.choices?.some(c => c.id === choice.id)
+                    );
 
-            return { ...prev, [choice.id]: nowChecked };
+                    if (parentOption) {
+                        // Get all other choices in the same option with type !== 1
+                        const otherChoicesInSameOption = parentOption.choices?.filter(c =>
+                            c.id !== choice.id && Number(c?.type) !== 1
+                        ) || [];
+
+                        // Deselect all other choices with type !== 1 in the same option
+                        const idsToDeselect = otherChoicesInSameOption.map(c => c.id);
+
+                        // Update option data: reset qty to 0 for deselected items, set qty to 1 for selected
+                        updateOptionData(prevData =>
+                            prevData.map(item => ({
+                                ...item,
+                                choices: item.choices.map(c =>
+                                    idsToDeselect.includes(c.id)
+                                        ? { ...c, qty: 0 }
+                                        : c.id === choice.id
+                                            ? { ...c, qty: (c.qty && c.qty > 0) ? c.qty : 1 }
+                                            : c
+                                )
+                            }))
+                        );
+
+                        // Remove deselected choice IDs from selectedChoiceIds, add current choice
+                        setSelectedChoiceIds(prev => {
+                            const filtered = prev.filter(id => !idsToDeselect.includes(id));
+                            return Array.from(new Set([...filtered, choice.id]));
+                        });
+
+                        // Update checkedChoices: uncheck others, check current
+                        const updatedChecked = { ...prev };
+                        idsToDeselect.forEach(id => {
+                            updatedChecked[id] = false;
+                        });
+                        updatedChecked[choice.id] = true;
+                        return updatedChecked;
+                    }
+                } else {
+                    // Unchecking: reset qty to 0
+                    updateOptionData(prevData =>
+                        prevData.map(item => ({
+                            ...item,
+                            choices: item.choices.map(c =>
+                                c.id === choice.id ? { ...c, qty: 0 } : c
+                            )
+                        }))
+                    );
+                    setSelectedChoiceIds(prev => prev.filter(id => id !== choice.id));
+                    return { ...prev, [choice.id]: false };
+                }
+            } else {
+                // For type === 1 items, allow multiple selection (checkbox behavior)
+                // Update qty in option data: when checked, ensure qty at least 1; when unchecked, reset to 0
+                if (nowChecked) {
+                    updateOptionData(prevData =>
+                        prevData.map(item => ({
+                            ...item,
+                            choices: item.choices.map(c =>
+                                c.id === choice.id ? { ...c, qty: (c.qty && c.qty > 0) ? c.qty : 1 } : c
+                            )
+                        }))
+                    );
+                    setSelectedChoiceIds(prev => Array.from(new Set([...prev, choice.id])));
+                } else {
+                    updateOptionData(prevData =>
+                        prevData.map(item => ({
+                            ...item,
+                            choices: item.choices.map(c =>
+                                c.id === choice.id ? { ...c, qty: 0 } : c
+                            )
+                        }))
+                    );
+                    setSelectedChoiceIds(prev => prev.filter(id => id !== choice.id));
+                }
+
+                return { ...prev, [choice.id]: nowChecked };
+            }
         });
     }
 
@@ -233,6 +294,7 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
 
     async function sanitize_dishData() {
+        setselectedTablenumber(0)
         // table_modalopen(true)
         const parentOptionIds = food
             .filter(option =>

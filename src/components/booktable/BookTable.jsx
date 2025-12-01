@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Pressable, ScrollView } from 'react-native'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 // import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -11,6 +11,9 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
     const navigation = useNavigation()
     const { cart, setCart, tempFood, setTempFood } = useContext(UserContext)
 
+    useEffect(() => {
+        settable(table)
+    }, [table])
     const assignTableAndPushToCart = (tableNumber) => {
         if (tempFood.length === 0) {
             Toast.show({
@@ -42,7 +45,7 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                     <Pressable style={styles.drop} onPress={() => {
                         setOpen(!open)
                     }}>
-                        <Text style={styles.placeholder}>{table === 0 ? "Select A Table" : `Select Table ${selectedtablenumber}`}</Text>
+                        <Text style={styles.placeholder}>{table == 0 ? "Select A Table" : `Select Table ${selectedtablenumber}`}</Text>
                         <FeatherIcon name="chevron-down" size={18} color="#888888" />
                     </Pressable>
 

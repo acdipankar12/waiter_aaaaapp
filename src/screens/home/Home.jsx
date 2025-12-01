@@ -416,7 +416,7 @@ const Home = () => {
                         justifyContent: 'space-between',
                         //    paddingHorizontal:20
                     }}>
-                        <View style={{
+                        {/* <View style={{
                             maxWidth: '80%'
                         }} >
                             <Text style={{
@@ -430,7 +430,7 @@ const Home = () => {
                                     // selected == null ? selectedCateActive : JSON.parse(selected?.name)[Object.keys(JSON.parse(selected?.name))[0]]
 
                                 } </Text>
-                        </View>
+                        </View> */}
 
                         {
                             childrenStack?.length > 0 && (
@@ -544,6 +544,7 @@ const Home = () => {
                         selectedFood={selectedfood}
                         table_modalopen={setOpenModaltable}
                         selectedTablenumber={selectedTablenumber}
+                          setselectedTablenumber={setselectedTablenumber}
 
                     />
                 </Modal>
