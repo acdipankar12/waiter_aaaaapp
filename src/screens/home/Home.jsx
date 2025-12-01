@@ -155,11 +155,14 @@ const Home = () => {
                     setActiveCategory(firstCat)
                     setSelected(firstCat)
                     // set the current children for the first category (handle both keys)
-                    // if(firstCat?.children_categories?.length != 0)
-                    const children = [
-                        { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
-                        ...(firstCat?.childrenCategories ?? firstCat?.children_categories ?? [])
-                    ];
+                    const rawChildren = firstCat?.childrenCategories ?? firstCat?.children_categories ?? []
+                    const children =
+                        rawChildren.length > 0
+                            ? [
+                                { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                ...rawChildren
+                            ]
+                            : []
                     setChildrenStack([])
                     setCurrentChildren(children)
                     await fetchsubCategoryData(firstCat.id, _userData?.business)
@@ -198,7 +201,8 @@ const Home = () => {
                 category_id: cat_id,
                 lang_id: '1',
                 type: '2',
-                business_id: business_id
+                business_id: business_id,
+
             }, {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
@@ -238,10 +242,14 @@ const Home = () => {
         }
         // if no more stack, reset to active category top-level children
         if (activeCategory) {
-            const children = [
-                { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
-                ...(activeCategory?.childrenCategories ?? activeCategory?.children_categories ?? [])
-            ]
+            const rawChildren = activeCategory?.childrenCategories ?? activeCategory?.children_categories ?? []
+            const children =
+                rawChildren.length > 0
+                    ? [
+                        { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                        ...rawChildren
+                    ]
+                    : []
             setCurrentChildren(children)
             const obj = activeCategory?.name ? JSON.parse(activeCategory.name) : {}
             const firstValue = obj[Object.keys(obj)[0]]
@@ -302,10 +310,14 @@ const Home = () => {
                                         // select category and display its children (reset drill stack)
                                         setActiveCategory(item)
                                         setSelected(item)
-                                        const children = [
-                                            { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
-                                            ...(item?.childrenCategories ?? item?.children_categories ?? [])
-                                        ];
+                                        const rawChildren = item?.childrenCategories ?? item?.children_categories ?? []
+                                        const children =
+                                            rawChildren.length > 0
+                                                ? [
+                                                    { id: 0, name: "{\"1\":\"All\",\"5\":\"All\",\"6\":\"ALL\"}" },
+                                                    ...rawChildren
+                                                ]
+                                                : []
                                         setChildrenStack([])
                                         setCurrentChildren(children)
                                         const obj = item?.name ? JSON.parse(item.name) : {}

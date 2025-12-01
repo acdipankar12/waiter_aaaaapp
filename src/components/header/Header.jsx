@@ -23,7 +23,9 @@ const Header = ({ inhome, page }) => {
                     inhome ? <TouchableOpacity style={styles.searchbar}>
                         <FeatherIcon name="search" size={18} color="black" />
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, {
+                                width: '100%'
+                            }]}
                             placeholder='Search'
                             placeholderTextColor={"#888"}
                         />
