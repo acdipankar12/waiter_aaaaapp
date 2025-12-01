@@ -56,6 +56,10 @@ const Home = () => {
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
 
+    // search state
+    const [searchTerm, setSearchTerm] = useState('')
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+
     const [selectedTablenumber, setselectedTablenumber] = useState(0)
     // ref to access AddFood's imperative handle (exposed sanitize function)
     const addFoodRef = useRef(null)
@@ -165,7 +169,7 @@ const Home = () => {
                             : []
                     setChildrenStack([])
                     setCurrentChildren(children)
-                    await fetchsubCategoryData(firstCat.id, _userData?.business)
+                    await fetchsubCategoryData(firstCat.id, _userData?.business, debouncedSearchTerm)
 
                     const obj = firstCat?.name ? JSON.parse(firstCat.name) : {}
                     const firstValue = obj[Object.keys(obj)[0]]
@@ -189,7 +193,7 @@ const Home = () => {
         retrive_savecart()
     }, [])
     // fetch  subcategory list data
-    async function fetchsubCategoryData(cat_id, business_id) {
+    async function fetchsubCategoryData(cat_id, business_id, search_keyword = '') {
         setSubcategorylistData([])
         setDishListData([])
         console.log('api der')
@@ -202,6 +206,7 @@ const Home = () => {
                 lang_id: '1',
                 type: '2',
                 business_id: business_id,
+                search_keyword: search_keyword ?? ''
 
             }, {
                 "Content-Type": "application/json",
@@ -226,9 +231,18 @@ const Home = () => {
     }
 
     useEffect(() => {
-        // Whenever `selected` changes, fetch dishes for that category/subcategory
-        if (selected?.id) fetchsubCategoryData(selected.id, state?.user_data?.business)
-    }, [selected])
+        // Whenever `selected` or debounced search changes, fetch dishes for that category/subcategory
+        if (selected?.id) fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm)
+    }, [selected, debouncedSearchTerm])
+
+    // debounce search term to avoid spamming API
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm)
+        }, 400) // 400ms debounce
+
+        return () => clearTimeout(timer)
+    }, [searchTerm])
 
     const handleBack = () => {
         if (childrenStack.length > 0) {
@@ -281,7 +295,11 @@ const Home = () => {
 
             }}>
 
-                <Header inhome={true} />
+                <Header
+                    inhome={true}
+                    searchValue={searchTerm}
+                    onSearchChange={setSearchTerm}
+                />
                 <View style={{ paddingHorizontal: 20, marginBottom: 70 }}>
                     {categoriesLoaDING ? (
                         <FlatList

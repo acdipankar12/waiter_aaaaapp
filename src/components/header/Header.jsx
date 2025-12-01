@@ -9,7 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import IconAntDesign from 'react-native-vector-icons/AntDesign'
 // import { StatusBar } from 'expo-status-bar';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-const Header = ({ inhome, page }) => {
+const Header = ({ inhome, page, searchValue, onSearchChange }) => {
     const navigation = useNavigation()
     return (
         <View style={{ backgroundColor: inhome ? "#fff" : "#0102FD" }}>
@@ -28,6 +28,8 @@ const Header = ({ inhome, page }) => {
                             }]}
                             placeholder='Search'
                             placeholderTextColor={"#888"}
+                            value={searchValue}
+                            onChangeText={onSearchChange}
                         />
                     </TouchableOpacity> : <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 16, color: "#fff" }}>{page}</Text>
                 }
