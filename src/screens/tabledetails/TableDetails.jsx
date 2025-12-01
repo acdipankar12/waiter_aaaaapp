@@ -797,7 +797,7 @@ const TableDetails = ({ route }) => {
                                         {
                                             (!checkanyitemsAddedaftersendtokitchen && mainfilteritemCartTable?.track_tableids != null) && (
                                                 <>
-                                                    <Text style={tableDetailstyles.cash}>Cash / Card</Text>
+                                                    <Text style={tableDetailstyles.cash}>Payment</Text>
                                                     <View style={{
                                                         justifyContent: 'space-between',
                                                         flexDirection: 'row'

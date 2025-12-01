@@ -194,10 +194,11 @@ const Home = () => {
     }, [])
     // fetch  subcategory list data
     async function fetchsubCategoryData(cat_id, business_id, search_keyword = '') {
+         setloading(true)
         setSubcategorylistData([])
         setDishListData([])
         console.log('api der')
-        setloading(true)
+       
         let _usertoken = await _retrieveStoreData('_waiter_token')
 
         try {
@@ -358,7 +359,7 @@ const Home = () => {
                     )}
 
                     <View style={{
-                        // paddingTop: 8,
+                        // marginTop: 8,
                         // backgroundColor:'green'
                     }}>
                         {
@@ -525,7 +526,9 @@ const Home = () => {
                                         ListEmptyComponent={() => {
                                             return (
                                                 <>
-                                                    <View style={{
+                                                {
+                                                    !categoriesLoaDING  && (
+<View style={{
                                                         // justifyContent:'center',
                                                         alignItems: 'center',
                                                         height: '100%'
@@ -547,6 +550,9 @@ const Home = () => {
                                                             fontWeight: '600'
                                                         }}> No Dish Found !</Text>
                                                     </View>
+                                                    )
+                                                }
+                                                    
                                                 </>
                                             )
 
