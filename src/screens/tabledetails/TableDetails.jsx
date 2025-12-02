@@ -14,6 +14,7 @@ import { apiRequest } from '../../utils/apiService';
 // import Toast from 'react-native-toast-message';
 import HTML from 'react-native-render-html';
 import Toast from "react-native-simple-toast";
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
 
@@ -610,7 +611,7 @@ const TableDetails = ({ route }) => {
                                                         }]}>
                                                             {f?.data[0]?.name}
                                                         </Text>
-                                                        {/* {addfood || fromcart ? <MaterialIcons name="edit" size={18} color="#0102FD" /> : null} */}
+                                                        {/* <MaterialIcons name="edit" size={18} color="#0102FD" /> */}
                                                     </View>
                                                     <Text style={tableDetailstyles.itemprice}>
                                                         ${Number(f?.data[0]?.offerprice)?.toFixed(2)}
@@ -631,7 +632,7 @@ const TableDetails = ({ route }) => {
                                                                 body: {
                                                                     paddingTop: 5,
                                                                     margin: 0
-                                                                },
+                                                                  },
                                                                 p: {
                                                                     padding: 0,
                                                                     fontSize: 14,

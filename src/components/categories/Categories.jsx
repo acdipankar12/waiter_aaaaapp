@@ -26,7 +26,7 @@ const Categories = ({ item, isSelected, onPress }) => {
 const styles = StyleSheet.create({
     pill: {
         backgroundColor: '#f0f0ff',
-        paddingVertical: 8,
+        paddingVertical: 9,
         paddingHorizontal: 15,
         borderRadius: 20,
         marginRight: 10,

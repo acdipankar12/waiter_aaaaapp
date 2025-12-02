@@ -11,6 +11,9 @@ import { _retrieveStoreData } from '../../utils/store';
 import moment from 'moment';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import Ionicons from "react-native-vector-icons/Ionicons";
+import FoodCardSkeleton from '../../components/foodcard/foodskelaton';
+
+const PER_PAGE = 10
 
 const OrderList = () => {
     const navigation = useNavigation()
@@ -18,30 +21,63 @@ const OrderList = () => {
 
     const [orderListData, setOrdeData] = useState([])
     const [loadingState, setLoadingState] = useState(false)
-    async function fetchOrderlist() {
-        setLoadingState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [refreshing, setRefreshing] = useState(false)
+    const [pageNo, setPageNo] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+
+    async function fetchOrderlist({ page = 1, append = false, showLoader = true } = {}) {
+        console.log(PER_PAGE, page, 'on reached end///////')
+        if (append) {
+            setLoadingMore(true)
+        } else if (showLoader) {
+            setLoadingState(true)
+        }
         let _usertoken = await _retrieveStoreData('_waiter_token')
 
         try {
-            await apiRequest('waiter/order-list', 'post', {
-                lang_id: '1'
+            const res = await apiRequest('waiter/order-list', 'post', {
+                lang_id: '1',
+                perPage: PER_PAGE,
+                pageNo: page
             }, {
 
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 'Authorization': `Bearer ${_usertoken}`
 
-            }).then(async (res) => {
-                setOrdeData(res?.data)
-                setLoadingState(false)
-                console.log(res, 'api response order list..>>>>>>>>>>>')
-
-
             })
+
+            const incomingOrders = Array.isArray(res?.data) ? res?.data : []
+
+            setOrdeData(prev => append ? [...prev, ...incomingOrders] : incomingOrders)
+            setPageNo(page)
+            setHasMore(incomingOrders.length === PER_PAGE)
+            console.log(res, 'api response order list..>>>>>>>>>>>')
         } catch (error) {
             console.log(error)
 
+        } finally {
+            if (append) {
+                setLoadingMore(false)
+            } else if (showLoader) {
+                setLoadingState(false)
+            }
         }
+    }
+
+    const handleLoadMore = () => {
+        if (loadingMore || !hasMore) {
+            return
+        }
+
+        fetchOrderlist({ page: pageNo + 1, append: true })
+    }
+
+    const handleRefresh = () => {
+        setRefreshing(true)
+        setHasMore(true)
+        fetchOrderlist({ page: 1, append: false, showLoader: false }).finally(() => setRefreshing(false))
     }
 
     useEffect(() => {
@@ -66,17 +102,10 @@ const OrderList = () => {
             <View style={orderListstyles.orderWrapper}>
                 {
                     loadingState ? (
-                        <View style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-
-                            <ActivityIndicator
-                                color='#000000'
-                                size={30}
-                            />
-                        </View>
+                        // Show 4 skeletons as placeholder
+                        Array.from({ length: 4 }).map((_, idx) => (
+                            <FoodCardSkeleton key={idx} />
+                        ))
                     )
 
                         :
@@ -149,12 +178,23 @@ const OrderList = () => {
                                 keyExtractor={(item) => item?.id?.toString()}
                                 showsHorizontalScrollIndicator={false}
                                 showsVerticalScrollIndicator={false}
+                                onEndReached={handleLoadMore}
+                                onEndReachedThreshold={0.2}
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
                                 contentContainerStyle={
                                     {
-                                        paddingBottom: 150,
+                                        paddingBottom: 170,
                                         marginVertical: 12,
                                         gap: 18
                                     }
+                                }
+                                ListFooterComponent={
+                                    loadingMore ? (
+                                        <View style={{ paddingVertical: 20 }}>
+                                            <ActivityIndicator color='#000000' size={24} />
+                                        </View>
+                                    ) : null
                                 }
                                 ListEmptyComponent={() => {
                                     <View>
