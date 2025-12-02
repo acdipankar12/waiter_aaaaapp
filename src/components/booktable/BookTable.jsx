@@ -168,9 +168,7 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                                 if (typeof sanitize_dishData === 'function') {
                                     // console.log('tagle' ,table)
                                     await sanitize_dishData()
-                                    setOpenModaltable(false)
-                                    setOpenModal(false)
-                                    navigation.navigate('my-cart')
+                                   
 
                                 }
                             } catch (e) {

@@ -12,7 +12,7 @@ import { UserContext } from '../../context/UserContext'
 import { _removeStoreData, _retrieveStoreData, _setStoreData } from '../../utils/store'
 import { FullWindowOverlay } from 'react-native-screens'
 
-const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber ,setselectedTablenumber}, ref) => {
+const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber, setselectedTablenumber }, ref) => {
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
@@ -296,6 +296,23 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
 
     async function sanitize_dishData() {
+
+        function isDishExists(tables, tableNumber, dishId) {
+            return tables
+                .find(t => t.table_number == tableNumber)
+                ?.dishdata
+                ?.some(group => group.data.some(d => d.id == dishId)) || false;
+        }
+
+        // await isDishExists(state?.cart_data, selectedTablenumber, selectedFood?.id)
+        const result = await isDishExists(state?.cart_data, selectedTablenumber, selectedFood?.id);
+
+        if (result) {
+            console.log('exite')
+            Toast.show(`Dish is already added to this table number: ${selectedTablenumber} `, Toast.SHORT, Toast.BOTTOM);
+
+            return
+        }
         setselectedTablenumber(0)
         // table_modalopen(true)
         const parentOptionIds = food
@@ -361,6 +378,9 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
             await _setStoreData('user_cart_data', JSON.stringify(updatedCartData))
 
             dispatch({ type: 'UPDATE_CART_DATA', payload: _save_storageData })
+            table_modalopen(false)
+            setOpenModal(false)
+            navigation.navigate('my-cart')
 
         } else {
 
@@ -373,6 +393,9 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
 
             await _setStoreData('user_cart_data', JSON.stringify([_save_storageData]))
             dispatch({ type: 'ADD_CART', payload: _save_storageData })
+            table_modalopen(false)
+            setOpenModal(false)
+            navigation.navigate('my-cart')
 
         }
         // if()
@@ -531,13 +554,13 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                         //     spice: spiceLevel,
                         //     dish: selectedRices
                         // })
-                             Toast.show('Successfully Added in table', Toast.SHORT, Toast.BOTTOM);
+                        Toast.show('Successfully Added in table', Toast.SHORT, Toast.BOTTOM);
                         // Toast.show({
                         //     type: "success",
                         //     text1: "Successfully Added in table"
                         // }),
-                            // setOpenModal(false)
-                            console.log(tempFood)
+                        // setOpenModal(false)
+                        console.log(tempFood)
 
                     }} style={addFoodStyles.add}>
                         <Text style={{ color: "#fff", fontSize: 18 }}>Add</Text>

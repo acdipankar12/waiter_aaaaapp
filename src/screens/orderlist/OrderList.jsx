@@ -90,7 +90,7 @@ const OrderList = () => {
                                     return (
                                         <View style={{
                                             // top
-                                        }}> 
+                                        }}>
                                             <View style={orderListstyles.orderBox}>
                                                 <View style={orderListstyles.head}>
                                                     <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 17 }}>{item?.resturant}</Text>
@@ -136,9 +136,9 @@ const OrderList = () => {
                                                 </TouchableOpacity>
                                             </View>
                                             <View style={{
-                                                borderWidth:.5,
-                                                borderColor:'#D9D9D9',
-                                                top:10
+                                                borderWidth: .5,
+                                                borderColor: '#D9D9D9',
+                                                top: 10
                                             }}>
                                             </View>
                                         </View>
