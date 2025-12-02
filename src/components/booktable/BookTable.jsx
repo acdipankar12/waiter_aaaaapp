@@ -5,14 +5,14 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { UserContext } from '../../context/UserContext';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-  import { Dropdown } from 'react-native-element-dropdown';
+import { Dropdown } from 'react-native-element-dropdown';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
 const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenumber, sanitize_dishData, setOpenModal }) => {
     const [open, setOpen] = useState(false);
     const [table, settable] = useState(selectedtablenumber);
     const navigation = useNavigation()
-    const { cart, setCart, tempFood, setTempFood } = useContext(UserContext)
+    const { cart, setCart, tempFood, setTempFood , state } = useContext(UserContext)
 
     useEffect(() => {
         settable(table)
@@ -42,70 +42,78 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
     };
 
 
-     const data = [
-    { label: ' 1', value: '1' },
-    { label: ' 2', value: '2' },
-    { label: ' 3', value: '3' },
-    { label: ' 4', value: '4' },
-    { label: ' 5', value: '5' },
-    { label: ' 6', value: '6' },
-    { label: ' 7', value: '7' },
-    { label: ' 8', value: '8' },
-     { label: ' 9', value: '9' },
-      { label: ' 10', value: '10' },
-  ];
+    const data = [
+        { label: ' 1', value: '1' },
+        { label: ' 2', value: '2' },
+        { label: ' 3', value: '3' },
+        { label: ' 4', value: '4' },
+        { label: ' 5', value: '5' },
+        { label: ' 6', value: '6' },
+        { label: ' 7', value: '7' },
+        { label: ' 8', value: '8' },
+        { label: ' 9', value: '9' },
+        { label: ' 10', value: '10' },
+    ];
 
-  const DropdownComponent = () => {
-    const [value, setValue] = useState(null);
+    const DropdownComponent = () => {
+        const [value, setValue] = useState(null);
+        const _tablenumber = state?.cart_data?.filter(item => item?.table_number)
+        // Extract table numbers from the filtered array
+        const tableNumbers = _tablenumber?.map(item => String(item?.table_number)) || [];
+     
+        const renderItem = item => {
+            // Check if the current item's value exists in the tableNumbers array
+            const isTableBooked = tableNumbers.includes(item.value);
+            
+            return (
+                <View style={styles.item}>
+                    <Text style={styles.textItem}>{item.label}</Text>
+                    {isTableBooked && (
+                        <AntDesignIcon
+                            style={styles.icon}
+                            color="black"
+                            name="Safety"
+                            size={20}
+                        />
+                    )}
+                </View>
+            );
+        };
 
-    const renderItem = item => {
-      return (
-        <View style={styles.item}>
-          <Text style={styles.textItem}>{item.label}</Text>
-          {item.value === value && (
-            <AntDesignIcon
-              style={styles.icon}
-              color="black"
-              name="Safety"
-              size={20}
+        return (
+            <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                iconStyle={styles.iconStyle}
+                data={data}
+                search
+                maxHeight={300}
+                labelField="label"
+                valueField="value"
+                placeholder="Select One"
+                searchPlaceholder="Search..."
+                value={value}
+                onChange={item => {
+                    setValue(item.value);
+                    setselectedTablenumber(item.value);
+                    setOpen(false)
+                }}
+                renderLeftIcon={() => (
+                    <AntDesignIcon style={styles.icon} color="black" name="Safety" size={20} />
+                )}
+                renderItem={renderItem}
             />
-          )}
-        </View>
-      );
+        );
     };
-
-    return (
-      <Dropdown
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        iconStyle={styles.iconStyle}
-        data={data}
-        search
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder="Select One"
-        searchPlaceholder="Search..."
-        value={value}
-        onChange={item => {
-          setValue(item.value);
-        }}
-        renderLeftIcon={() => (
-          <AntDesignIcon style={styles.icon} color="black" name="Safety" size={20} />
-        )}
-        renderItem={renderItem}
-      />
-    );
-  };
 
     return (
         <View style={styles.modalWrapper}>
             <View style={styles.addbox}>
                 <Text style={{ fontFamily: "Jost_500Medium", fontSize: 20 }}>Book A Table</Text>
                 <View style={styles.wrapper}>
-                    <DropdownComponent/>
+                    <DropdownComponent />
                     {/* <Pressable style={styles.drop} onPress={() => {
                         setOpen(!open)
                     }}>
@@ -191,48 +199,48 @@ const styles = StyleSheet.create({
         // backgroundColor: "#000000B2",
         zIndex: 1
     },
-     dropdown: {
-      margin: 16,
-      height: 50,
-      backgroundColor: 'white',
-      borderRadius: 12,
-      padding: 12,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.2,
-      shadowRadius: 1.41,
+    dropdown: {
+        margin: 16,
+        height: 50,
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 1.41,
 
-      elevation: 2,
+        elevation: 2,
     },
     icon: {
-      marginRight: 5,
+        marginRight: 5,
     },
     item: {
-      padding: 17,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+        padding: 17,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     textItem: {
-      flex: 1,
-      fontSize: 16,
+        flex: 1,
+        fontSize: 16,
     },
     placeholderStyle: {
-      fontSize: 16,
+        fontSize: 16,
     },
     selectedTextStyle: {
-      fontSize: 16,
+        fontSize: 16,
     },
     iconStyle: {
-      width: 20,
-      height: 20,
+        width: 20,
+        height: 20,
     },
     inputSearchStyle: {
-      height: 40,
-      fontSize: 16,
+        height: 40,
+        fontSize: 16,
     },
     addbox: {
         width: "85%",
