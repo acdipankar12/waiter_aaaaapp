@@ -11,7 +11,9 @@ import Completed from '../../components/success_modal/Completed';
 import { UserContext } from '../../context/UserContext';
 import { _retrieveStoreData, _setStoreData } from '../../utils/store';
 import { apiRequest } from '../../utils/apiService';
-import Toast from 'react-native-toast-message';
+// import Toast from 'react-native-toast-message';
+import HTML from 'react-native-render-html';
+import Toast from "react-native-simple-toast";
 
 
 
@@ -240,10 +242,12 @@ const TableDetails = ({ route }) => {
     async function completeOrder(_orderID) {
         console.log(addPaymentMethod, 'payment methos////')
         if (addPaymentMethod == null) {
-            Toast.show({
-                type: 'error',
-                text1: "Please choose payment method."
-            })
+            Toast.show('Please choose payment method.', Toast.SHORT, Toast.BOTTOM);
+
+            // Toast.show({
+            //     type: 'error',
+            //     text1: "Please choose payment method."
+            // })
             return
         }
         setCompleteLoading(true)
@@ -252,8 +256,8 @@ const TableDetails = ({ route }) => {
         try {
             await apiRequest('waiter/order-complete', 'post', {
                 id: _orderID,
-                payment_id: addPaymentMethod?.pid,
-                paymentmethod: addPaymentMethod,
+                payment_id: addPaymentMethod[0]?.pid,
+                paymentmethod: addPaymentMethod[0],
             }, {
 
                 "Content-Type": "application/json",
@@ -270,10 +274,11 @@ const TableDetails = ({ route }) => {
                     dispatch({ type: 'REMOVE_CART_DATA', payload: route?.params?.table_details?.table_number })
                     setCompleteLoading(false)
                     setCompleteOrder(true)
-                    Toast.show({
-                        type: "success",
-                        text1: "Order send to kitchen."
-                    })
+                    Toast.show('Order send to kitchen.', Toast.SHORT, Toast.BOTTOM);
+                    // Toast.show({
+                    //     type: "success",
+                    //     text1: "Order send to kitchen."
+                    // })
                 } else {
                     setCompleteLoading(false)
                 }
@@ -424,10 +429,12 @@ const TableDetails = ({ route }) => {
                     console.log(_updatecartdata, 'modifying datatata////////////////')
                     await _setStoreData('user_cart_data', JSON.stringify(_updatecartdata))
                     setSendToKitchenmodal(true)
-                    Toast.show({
-                        type: "success",
-                        text1: "Order send to kitchen."
-                    })
+                    Toast.show('Order send to kitchen.', Toast.SHORT, Toast.BOTTOM);
+
+                    // Toast.show({
+                    //     type: "success",
+                    //     text1: "Order send to kitchen."
+                    // })
                     setLoadingState(false)
 
                 }
@@ -546,10 +553,12 @@ const TableDetails = ({ route }) => {
                     dispatch({ type: 'CART_DATA_UPDATE_SEND_TO_KITCHEN', payload: _updatecartdata })
                     console.log(_updatecartdata, 'modifying datatata////////////////')
                     await _setStoreData('user_cart_data', JSON.stringify(_updatecartdata))
-                    Toast.show({
-                        type: "success",
-                        text1: "Order send to kitchen."
-                    })
+                    Toast.show('Order send to kitchen.', Toast.SHORT, Toast.BOTTOM);
+
+                    // Toast.show({
+                    //     type: "success",
+                    //     text1: "Order send to kitchen."
+                    // })
                     setLoadingState(false)
 
                 } {
@@ -567,7 +576,7 @@ const TableDetails = ({ route }) => {
     }
     return (
         <View style={{ flex: 1 }}>
-            <Header inhome={false} page={    route?.params?.order_details?.type != undefined ? 'Order Details':"Table Details"} />
+            <Header inhome={false} page={route?.params?.order_details?.type != undefined ? 'Order Details' : "Table Details"} />
             {
                 destructureTableResponse?.length == 0 ? <>
                     <ActivityIndicator
@@ -596,7 +605,9 @@ const TableDetails = ({ route }) => {
                                             <View key={i} style={tableDetailstyles.fooditem}>
                                                 <View style={tableDetailstyles.itemhead}>
                                                     <View style={tableDetailstyles.itemheadwrap}>
-                                                        <Text style={tableDetailstyles.itemname}>
+                                                        <Text style={[tableDetailstyles.itemname, {
+                                                            fontWeight: '700'
+                                                        }]}>
                                                             {f?.data[0]?.name}
                                                         </Text>
                                                         {/* {addfood || fromcart ? <MaterialIcons name="edit" size={18} color="#0102FD" /> : null} */}
@@ -605,21 +616,48 @@ const TableDetails = ({ route }) => {
                                                         ${Number(f?.data[0]?.offerprice)?.toFixed(2)}
                                                     </Text>
                                                 </View>
-                                                <Text style={tableDetailstyles.itemdesc}>
-                                                    {f?.data[0]?.description}
-                                                </Text>
+                                                {/* <Text style={tableDetailstyles.itemdesc}> */}
+                                                {
+                                                    f?.data[0]?.description != undefined && f?.data[0]?.description != "" && (
+                                                        <HTML html={f?.data[0]?.description}
+                                                            containerStyle={{
+                                                                color: '#333333',
+                                                                fontSize: 13,
+                                                                flexShrink: 1,
+                                                                fontWeight: "400",
+                                                                width: '100%',
+                                                            }}
+                                                            tagsStyles={{
+                                                                body: {
+                                                                    paddingTop: 5,
+                                                                    margin: 0
+                                                                },
+                                                                p: {
+                                                                    padding: 0,
+                                                                    fontSize: 14,
+                                                                    fontFamily: "Jost-Regular",
+                                                                    fontWeight: '400'
+                                                                }
+                                                            }}
+                                                        //    imagesMaxWidth={Dimensions.get('window').width}
+                                                        />
+                                                    )
+                                                }
+
+                                                {/* {f?.data[0]?.description} */}
+                                                {/* </Text> */}
 
                                                 {
                                                     f?._optionsFilter?.map((options) => {
                                                         return (
                                                             <View style={tableDetailstyles.spicy}>
-                                                                <Text style={{ fontFamily: "Jost_500Medium", color: "#0102FD" }}>{options?.options_name}</Text>
+                                                                <Text style={{ fontFamily: "Jost_500Medium", color: "#0102FD", fontWeight: '700' }}>{options?.options_name}</Text>
                                                                 {
                                                                     options?.filter_option_choices?.map((choise) => {
                                                                         return (
                                                                             <View style={{ flexDirection: "row", alignItems: "center", gap: 3 }}>
                                                                                 <View style={{ height: 6, width: 6, borderRadius: 3, backgroundColor: "#08D61D" }}></View>
-                                                                                <Text style={{ fontFamily: "Jost_500Medium" ,paddingLeft:4 }}>{choise?.choice_name} {choise?.qty != null ? `x ${choise?.qty}` : ''} <Text
+                                                                                <Text style={{ fontFamily: "Jost_500Medium", paddingLeft: 4 }}>{choise?.choice_name} {choise?.qty != null ? `x ${choise?.qty}` : ''} <Text
                                                                                     style={{ fontFamily: "Jost_500Medium", color: "#0102FD" }}
                                                                                 >$ {choise?.qty != null ? choise?.price * choise?.qty : choise?.price}</Text></Text>
                                                                             </View>
@@ -720,8 +758,20 @@ const TableDetails = ({ route }) => {
                                                     <Text style={tableDetailstyles.pay}>Payment</Text>
                                                     <View style={{
                                                         justifyContent: 'space-between',
-                                                        flexDirection: 'row'
-                                                    }}>
+                                                        flexDirection: 'row',
+                                                        paddingVertical: 3
+                                                        // backgroundColor:'green'
+                                                    }}
+                                                        onPress={() => {
+                                                            let _cashPayment = paymentMethods?.filter(item => item?.name == 'cash')
+                                                            if (addPaymentMethod == null) {
+                                                                setAddPaymentMethos(_cashPayment)
+                                                            } else {
+                                                                setAddPaymentMethos(null)
+                                                            }
+
+                                                        }}
+                                                    >
                                                         <Text style={tableDetailstyles.cash}>Cash / Card</Text>
                                                         {
                                                             addPaymentMethod != null ? (
@@ -739,15 +789,7 @@ const TableDetails = ({ route }) => {
 
                                                                 >
                                                                     <TouchableOpacity
-                                                                        onPress={() => {
-                                                                            let _cashPayment = paymentMethods?.filter(item => item?.name == 'cash')
-                                                                            if (addPaymentMethod == null) {
-                                                                                setAddPaymentMethos(_cashPayment)
-                                                                            } else {
-                                                                                setAddPaymentMethos(null)
-                                                                            }
 
-                                                                        }}
                                                                         style={{
                                                                             width: 15,
                                                                             height: 15,
@@ -798,10 +840,23 @@ const TableDetails = ({ route }) => {
                                             (!checkanyitemsAddedaftersendtokitchen && mainfilteritemCartTable?.track_tableids != null) && (
                                                 <>
                                                     <Text style={tableDetailstyles.cash}>Payment</Text>
-                                                    <View style={{
+                                                    <TouchableOpacity style={{
                                                         justifyContent: 'space-between',
-                                                        flexDirection: 'row'
-                                                    }}>
+                                                        flexDirection: 'row',
+                                                        paddingVertical: 3
+                                                        // backgroundColor:'green'
+                                                    }}
+
+                                                        onPress={() => {
+                                                            let _cashPayment = paymentMethods?.filter(item => item?.name == 'cash')
+                                                            if (addPaymentMethod == null) {
+                                                                setAddPaymentMethos(_cashPayment)
+                                                            } else {
+                                                                setAddPaymentMethos(null)
+                                                            }
+
+                                                        }}
+                                                    >
                                                         <Text style={tableDetailstyles.cash}>Cash / Card</Text>
                                                         {
                                                             addPaymentMethod != null ? (
@@ -819,15 +874,15 @@ const TableDetails = ({ route }) => {
 
                                                                 >
                                                                     <TouchableOpacity
-                                                                        onPress={() => {
-                                                                            let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
-                                                                            if (addPaymentMethod == null) {
-                                                                                setAddPaymentMethos(_cashPayment)
-                                                                            } else {
-                                                                                setAddPaymentMethos(null)
-                                                                            }
+                                                                        // onPress={() => {
+                                                                        //     let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
+                                                                        //     if (addPaymentMethod == null) {
+                                                                        //         setAddPaymentMethos(_cashPayment)
+                                                                        //     } else {
+                                                                        //         setAddPaymentMethos(null)
+                                                                        //     }
 
-                                                                        }}
+                                                                        // }}
                                                                         style={{
                                                                             width: 15,
                                                                             height: 15,
@@ -854,21 +909,21 @@ const TableDetails = ({ route }) => {
                                                                         alignItems: 'center'
                                                                         // backgroundColor: addPaymentMethod != null ? '#0102FD' : '#FFFFFF'
                                                                     }}
-                                                                        onPress={() => {
-                                                                            let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
-                                                                            if (addPaymentMethod == null) {
-                                                                                setAddPaymentMethos(_cashPayment)
-                                                                            } else {
-                                                                                setAddPaymentMethos(null)
-                                                                            }
+                                                                    // onPress={() => {
+                                                                    //     let _cashPayment = paymentMethods?.find(item => item?.name == 'cash')
+                                                                    //     if (addPaymentMethod == null) {
+                                                                    //         setAddPaymentMethos(_cashPayment)
+                                                                    //     } else {
+                                                                    //         setAddPaymentMethos(null)
+                                                                    //     }
 
-                                                                        }}
+                                                                    // }}
                                                                     ></TouchableOpacity>
                                                                 )
 
                                                         }
 
-                                                    </View>
+                                                    </TouchableOpacity>
                                                 </>
 
                                             )
@@ -970,7 +1025,12 @@ const TableDetails = ({ route }) => {
                                                             completeOrder(mainfilteritemCartTable?.orderID)
                                                             // setCompleted(true)
                                                         }}
-                                                        style={tableDetailstyles.buttTwo}>
+                                                        style={[tableDetailstyles.buttTwo,
+
+                                                        {
+                                                            backgroundColor: addPaymentMethod == null ? 'gray' : '#08D61D'
+                                                        }
+                                                        ]}>
 
                                                         <Text style={{ color: "#fff", fontFamily: "Jost_500Medium" }}>Complete Order</Text>
                                                         {
@@ -996,7 +1056,14 @@ const TableDetails = ({ route }) => {
                                                             completeOrder(mainfilteritemCartTable?.orderID)
                                                             // setCompleted(true)
                                                         }}
-                                                        style={tableDetailstyles.buttTwo}>
+                                                        style={[tableDetailstyles.buttTwo,
+
+                                                        {
+                                                            backgroundColor: addPaymentMethod == null ? 'gray' : '#08D61D'
+                                                        }
+                                                        ]}>
+
+
 
                                                         <Text style={{ color: "#fff", fontFamily: "Jost_500Medium" }}>Complete Order</Text>
                                                         {

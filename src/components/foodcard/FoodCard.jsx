@@ -25,19 +25,38 @@ const FoodCard = ({ onPress, food }) => {
 
                     }</Text>
                 </View>
-                <View style={styles.descriptionRow}>
-                    <View>
-                        <HTML html={food?.description}
-                            containerStyle={styles?.description}
-                        //    imagesMaxWidth={Dimensions.get('window').width}
-                        />
-                    </View>
+                <View style={[styles.descriptionRow, {
+                    paddingTop: 2
+                    // backgroundColor: 'green'
+                }]}>
+                    {
+                        food?.description != undefined  && food?.description != ''&& (
+                            <View>
+                                <HTML html={food?.description ?? food?.description}
+                                    containerStyle={styles?.description}
+                                    tagsStyles={{
+                                        body: {
+                                            paddingTop: 5,
+                                            margin: 0
+                                        },
+                                        p: {
+                                            padding: 0
+                                        }
+                                    }}
+                                //    imagesMaxWidth={Dimensions.get('window').width}
+                                />
+                            </View>
+                        )
+                    }
+
 
 
 
 
                 </View>
-                <View>
+                <View style={{
+                    // backgroundColor:'green'
+                }}>
                     <View style={[styles.actions]}>
                         <TouchableOpacity style={styles.iconButton}>
                             <AntDesignIcon name="appstore1" size={16} color="#fff" style={styles.ico1} />
@@ -86,6 +105,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
+        paddingBottom: 0
     },
     title: {
         fontWeight: '600',
@@ -103,11 +123,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'nowrap',
-        marginTop: 4,
+        marginTop: 0,
         maxWidth: '100%'
 
 
-         
+
     },
     description: {
         color: '#333333',
@@ -115,6 +135,8 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         fontWeight: "400",
         width: '100%',
+        //  marginHorizontal:0,
+        //  marginVertical
     },
     actions: {
         flexDirection: 'row',

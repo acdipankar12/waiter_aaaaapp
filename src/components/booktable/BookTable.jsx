@@ -2,7 +2,9 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Pressable, ScrollV
 import React, { useContext, useEffect, useState } from 'react'
 // import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
+// import Toast from 'react-native-toast-message';
+import Toast from "react-native-simple-toast";
+
 import { UserContext } from '../../context/UserContext';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { Dropdown } from 'react-native-element-dropdown';
@@ -12,17 +14,18 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
     const [open, setOpen] = useState(false);
     const [table, settable] = useState(selectedtablenumber);
     const navigation = useNavigation()
-    const { cart, setCart, tempFood, setTempFood , state } = useContext(UserContext)
+    const { cart, setCart, tempFood, setTempFood, state } = useContext(UserContext)
 
     useEffect(() => {
         settable(table)
     }, [table])
     const assignTableAndPushToCart = (tableNumber) => {
         if (tempFood.length === 0) {
-            Toast.show({
-                type: "success",
-                text1: "Sorry No Food To Add"
-            })
+            Toast.show('Sorry No Food To Add', Toast.SHORT, Toast.BOTTOM);
+            // Toast.show({
+            //     type: "success",
+            //     text1: "Sorry No Food To Add"
+            // })
         } else {
             setCart(prev => [
                 ...prev,
@@ -56,26 +59,45 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
     ];
 
     const DropdownComponent = () => {
-        const [value, setValue] = useState(null);
+        const [value, setValue] = useState(selectedtablenumber ? String(selectedtablenumber) : null);
         const _tablenumber = state?.cart_data?.filter(item => item?.table_number)
         // Extract table numbers from the filtered array
         const tableNumbers = _tablenumber?.map(item => String(item?.table_number)) || [];
-     
+
+        // Update value when selectedtablenumber prop changes
+        useEffect(() => {
+            if (selectedtablenumber) {
+                setValue(String(selectedtablenumber));
+            }
+        }, [selectedtablenumber]);
+
         const renderItem = item => {
             // Check if the current item's value exists in the tableNumbers array
             const isTableBooked = tableNumbers.includes(item.value);
-            
+            // Check if this item is currently selected
+            const isSelected = item.value === value;
+
             return (
-                <View style={styles.item}>
-                    <Text style={styles.textItem}>{item.label}</Text>
-                    {isTableBooked && (
-                        <AntDesignIcon
-                            style={styles.icon}
-                            color="black"
-                            name="Safety"
-                            size={20}
-                        />
-                    )}
+                <View style={[styles.item, isSelected && styles.selectedItem]}>
+                    <Text style={[styles.textItem, isSelected && styles.selectedText]}>{item.label}</Text>
+                    <View style={styles.iconContainer}>
+                        {isTableBooked && (
+                            <AntDesignIcon
+                                style={styles.icon}
+                                color='#0102FD'
+                                name="Safety"
+                                size={20}
+                            />
+                        )}
+                        {isSelected && (
+                            <AntDesignIcon
+                                style={styles.icon}
+                                color="#0102FD"
+                                name="checkcircle"
+                                size={20}
+                            />
+                        )}
+                    </View>
                 </View>
             );
         };
@@ -156,11 +178,12 @@ const BookTable = ({ setOpenModaltable, setselectedTablenumber, selectedtablenum
                             }
 
                             assignTableAndPushToCart(table)
-                            Toast.show({
-                                type: "success",
-                                text1: "Success",
-                                text2: `Table No ${table} is booked`
-                            })
+                            Toast.show(`Table No ${table} is booked`, Toast.SHORT, Toast.BOTTOM);
+                            // Toast.show({
+                            //     type: "success",
+                            //     text1: "Success",
+                            //     text2: `Table No ${table} is booked`
+                            // })
                             // console.log(cart)
                             // navigation.navigate("table-details", {
                             //     order: false,
@@ -224,9 +247,20 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
     },
+    selectedItem: {
+        backgroundColor: '#f0f0ff',
+    },
     textItem: {
         flex: 1,
         fontSize: 16,
+    },
+    selectedText: {
+        fontWeight: '600',
+        color: '#0102FD',
+    },
+    iconContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     placeholderStyle: {
         fontSize: 16,

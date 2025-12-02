@@ -2,10 +2,11 @@ import { View, Text, ImageBackground, TextInput, TouchableOpacity, StatusBar } f
 import React, { useEffect, useRef, useState } from 'react'
 import { forgetEmailStyles, forgetOtpStyles } from './styles';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+// import Toast from 'react-native-toast-message';
 // import { StatusBar } from 'expo-status-bar';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import { apiRequest } from '../../../utils/apiService';
+import Toast from "react-native-simple-toast";
 
 const ForgetOtp = ({ navigation, route }) => {
     const [code, setCode] = useState(['', '', '', '']);
@@ -49,17 +50,15 @@ const ForgetOtp = ({ navigation, route }) => {
         }).then(async (response) => {
             console.log("Forget Response", response);
             if (response.status == false) {
-                Toast.show({
-                    type: 'error',
-                    text1: response.message
-                })
+                  Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
+                // Toast.show({
+                //     type: 'error',
+                //     text1: response.message
+                // })
                 setloading(false)
             } else if (response.success == true) {
                 // console.log("Forget Response>>>>>.", response);
-                Toast.show({
-                    type: 'success',
-                    text1: response.message
-                })
+                 Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
 
                 setloading(false)
                 // navigation.navigate("home")
@@ -89,17 +88,19 @@ const ForgetOtp = ({ navigation, route }) => {
         }).then(async (response) => {
             console.log("Forget Response///////", response);
             if (response.status == false) {
-                Toast.show({
-                    type: 'error',
-                    text1: response.message
-                })
+                  Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
+                // Toast.show({
+                //     type: 'error',
+                //     text1: response.message
+                // })
                 setloading(false)
             } else if (response.success == true) {
+                  Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
                 // console.log("Forget Response>>>>>.", response);
-                Toast.show({
-                    type: 'success',
-                    text1: response.message
-                })
+                // Toast.show({
+                //     type: 'success',
+                //     text1: response.message
+                // })
 
                 setloading(false)
                 navigation.navigate("forget-otp-new")

@@ -37,15 +37,13 @@ const MyCart = () => {
                                 <Text style={styles.tablenumber}>Table Number : {c?.table_number}</Text>
                                 <View style={styles.right}>
                                     <Text style={styles.item}>Item: {c?.dishdata?.length}</Text>
-                                    <EntypoIcon name="eye" size={19} color="#fff" style={styles.eye} onPress={() => {
-                                        // navigation.navigate("table-details", {
-                                        //     order: false,
-                                        //     addfood: false,
-                                        //     fromcart: true,
-                                        //     buttons: true,
-                                        //     table: c?.table_number
-                                        // })
-                                    }} />
+                                    <EntypoIcon
+                                  
+                                    name="eye" size={19} color="#fff" style={styles.eye} 
+                                     onPress={() => {
+                                    navigation.navigate('table-details', { table_details: c })
+                                }}
+                                    />
                                 </View>
                             </TouchableOpacity>
                         ))

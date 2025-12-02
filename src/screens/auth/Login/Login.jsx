@@ -8,9 +8,10 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import MaterialDesignIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { apiRequest } from '../../../utils/apiService';
-import Toast from 'react-native-toast-message';
+// import Toast from 'react-native-toast-message';
 import { _setStoreData } from '../../../utils/store';
 import { UserContext } from '../../../context/UserContext';
+import Toast from "react-native-simple-toast";
 
 
 
@@ -58,7 +59,7 @@ const Login = ({ navigation }) => {
                 email: false,
                 password: true
             })
-              setloading(false)
+            setloading(false)
 
         }
 
@@ -71,16 +72,20 @@ const Login = ({ navigation }) => {
                 password: login_cre.password
             }).then(async (response) => {
                 if (response.status == false) {
-                    Toast.show({
-                        type: 'error',
-                        text1: response.message
-                    })
+                    Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
+
+                    // Toast.show({
+                    //     type: 'error',
+                    //     text1: response.message
+                    // })
                     setloading(false)
                 } else if (response.status == true) {
-                    Toast.show({
-                        type: 'success',
-                        text1: response.message
-                    })
+                    Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
+
+                    // Toast.show({
+                    //     type: 'success',
+                    //     text1: response.message
+                    // })
                     await _setStoreData('userSession_waiter', response.data);
                     await _setStoreData('_waiter_token', response.token);
                     dispatch({ type: 'SET_USER_DATA', payload: response.data })

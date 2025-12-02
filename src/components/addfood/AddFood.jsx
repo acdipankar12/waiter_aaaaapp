@@ -1,7 +1,9 @@
 import { View, Text, TouchableOpacity, TextInput } from 'react-native'
 import React, { useContext, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 import { addFoodStyles } from './styles'
-import Toast from 'react-native-toast-message'
+// import Toast from 'react-native-toast-message'
+import Toast from "react-native-simple-toast";
+
 import { useNavigation } from '@react-navigation/native'
 // import { AntDesign } from '@expo/vector-icons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign'
@@ -529,10 +531,11 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
                         //     spice: spiceLevel,
                         //     dish: selectedRices
                         // })
-                        Toast.show({
-                            type: "success",
-                            text1: "Successfully Added in table"
-                        }),
+                             Toast.show('Successfully Added in table', Toast.SHORT, Toast.BOTTOM);
+                        // Toast.show({
+                        //     type: "success",
+                        //     text1: "Successfully Added in table"
+                        // }),
                             // setOpenModal(false)
                             console.log(tempFood)
 

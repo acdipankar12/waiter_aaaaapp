@@ -4,8 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { forgetEmailStyles, forgetNewStyles } from './styles'
 import { TextInput } from 'react-native'
 // import Ionicons from '@expo/vector-icons/Ionicons';
-import Toast from 'react-native-toast-message'
+// import Toast from 'react-native-toast-message'
 // import { StatusBar } from 'expo-status-bar'
+import Toast from "react-native-simple-toast";
 
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { apiRequest } from '../../../utils/apiService'
@@ -35,19 +36,23 @@ const NewPassword = () => {
         const { old_password, password, password_confirmation } = field_data;
 
         if (!old_password || !password || !password_confirmation) {
-            Toast.show({
-                type: "error",
-                text1: "Please fill all fields"
-            });
+
+            Toast.show('Please fill all fields', Toast.SHORT, Toast.BOTTOM);
+
+            // Toast.show({
+            //     type: "error",
+            //     text1: "Please fill all fields"
+            // });
             isvalid = false
             return;
         }
 
         if (password !== password_confirmation) {
-            Toast.show({
-                type: "error",
-                text1: "Passwords do not match"
-            });
+               Toast.show('Passwords do not match.', Toast.SHORT, Toast.BOTTOM);
+            // Toast.show({
+            //     type: "error",
+            //     text1: "Passwords do not match"
+            // });
             isvalid = false
             return;
         }
@@ -55,31 +60,34 @@ const NewPassword = () => {
         const hasUppercase = /[A-Z]/.test(password);
         const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
         if (!hasUppercase && !hasSpecialChar) {
-            Toast.show({
-                type: "error",
-                text1: "Password must have at least one uppercase letter or special character"
-            });
+              Toast.show('Password must have at least one uppercase letter or special character.', Toast.SHORT, Toast.BOTTOM);
+            // Toast.show({
+            //     type: "error",
+            //     text1: "Password must have at least one uppercase letter or special character"
+            // });
             setloading(false);
             return;
         }
         // let passwordBorder = login_cre.password.trim() === '' ? 'red' : '';
 
         if (isvalid) {
-            console.log('data' , field_data)
+            console.log('data', field_data)
             await apiRequest('user/change-password', 'post', JSON.stringify(field_data)).then(async (response) => {
                 console.log("Forget Response", response);
                 if (response.status == false) {
-                    Toast.show({
-                        type: 'error',
-                        text1: response.message
-                    })
+                       Toast.show( response.message, Toast.SHORT, Toast.BOTTOM);
+                    // Toast.show({
+                    //     type: 'error',
+                    //     text1: response.message
+                    // })
                     setloading(false)
                 } else if (response.success == true) {
                     console.log("Forget Response>>>>>.", response);
-                    Toast.show({
-                        type: 'success',
-                        text1: response.message
-                    })
+                  Toast.show( response.message, Toast.SHORT, Toast.BOTTOM);
+                    // Toast.show({
+                    //     type: 'success',
+                    //     text1: response.message
+                    // })
 
                     // navigation.navigate("forget-otp", {
                     //     email: email,
@@ -109,7 +117,7 @@ const NewPassword = () => {
                             <TextInput
                                 placeholderTextColor={"#888"}
                                 placeholder='Enter Your old Password'
-                                style={[forgetNewStyles.input ,{
+                                style={[forgetNewStyles.input, {
                                     // width:'100%'
                                 }]}
                                 secureTextEntry={secured ? false : true}
@@ -132,7 +140,7 @@ const NewPassword = () => {
                             <TextInput
                                 placeholderTextColor={"#888"}
                                 placeholder='Enter Your New Password'
-                                style={[forgetNewStyles.input ,{
+                                style={[forgetNewStyles.input, {
                                     // width:'100%'
                                 }]}
                                 secureTextEntry={secured ? false : true}

@@ -7,7 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 // import { StatusBar } from 'expo-status-bar';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import { apiRequest } from '../../../utils/apiService';
-import Toast from 'react-native-toast-message';
+// import Toast from 'react-native-toast-message';
+import Toast from "react-native-simple-toast";
+
 const ForgetEmail = () => {
     const navigation = useNavigation()
     const [email, setEmail] = useState('')
@@ -34,17 +36,11 @@ const ForgetEmail = () => {
             }).then(async (response) => {
                 console.log("Forget Response", response);
                 if (response.status == false) {
-                    Toast.show({
-                        type: 'error',
-                        text1: response.message
-                    })
+                     Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
                     setloading(false)
                 } else if (response.success == true) {
                     console.log("Forget Response>>>>>.", response);
-                    Toast.show({
-                        type: 'success',
-                        text1: response.message
-                    })
+                    Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
 
                     navigation.navigate("forget-otp", {
                         email: email,
