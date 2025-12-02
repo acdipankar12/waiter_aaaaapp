@@ -567,7 +567,7 @@ const TableDetails = ({ route }) => {
     }
     return (
         <View style={{ flex: 1 }}>
-            <Header inhome={false} page={"Table Details"} />
+            <Header inhome={false} page={    route?.params?.order_details?.type != undefined ? 'Order Details':"Table Details"} />
             {
                 destructureTableResponse?.length == 0 ? <>
                     <ActivityIndicator
@@ -679,7 +679,7 @@ const TableDetails = ({ route }) => {
                                                         flexDirection: 'row'
                                                     }}>
                                                         <Text style={tableDetailstyles.cash}>Cash / Card</Text>
-                                                        <TouchableOpacity style={{
+                                                        {/* <TouchableOpacity style={{
                                                             width: 21,
                                                             height: 21,
                                                             borderRadius: 100,
@@ -706,7 +706,7 @@ const TableDetails = ({ route }) => {
                                                             </TouchableOpacity>
 
 
-                                                        </TouchableOpacity>
+                                                        </TouchableOpacity> */}
                                                     </View>
                                                     {/* )
                                                     } */}

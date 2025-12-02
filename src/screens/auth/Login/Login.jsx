@@ -118,7 +118,15 @@ const Login = ({ navigation }) => {
                                 value={login_cre?.email}
                                 placeholderTextColor={"#888"}
                                 placeholder='Email'
-                                onChangeText={(t) => setlogin_cre({ ...login_cre, email: t })}
+                                onChangeText={(t) => {
+                                    if (t.length > 0) {
+                                        const firstChar = t.charAt(0).toLowerCase();
+                                        const rest = t.slice(1);
+                                        setlogin_cre({ ...login_cre, email: firstChar + rest });
+                                    } else {
+                                        setlogin_cre({ ...login_cre, email: t });
+                                    }
+                                }}
                             />
                         </TouchableOpacity>
                         <TouchableOpacity style={[loginStyles.inputBox, {
