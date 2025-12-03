@@ -15,6 +15,7 @@ import { apiRequest } from '../../utils/apiService';
 import HTML from 'react-native-render-html';
 import Toast from "react-native-simple-toast";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import TableDetailsSkeleton from './TableDetailsSkeleton';
 
 
 
@@ -47,17 +48,28 @@ const TableDetails = ({ route }) => {
     const [sendTokitchenModal, setSendToKitchenmodal] = useState(false)
     const [completeModal, setCompleteOrder] = useState(false)
     const [completeLoading, setCompleteLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     const [ordeerDetails, setOrderDetails] = useState(null)
     async function initialiseCartTableData() {
-        let _findTableCart = await state?.cart_data?.find(item => item?.table_number === route?.params?.table_details?.table_number)
-        await _restructure_dishData(_findTableCart)
-        await taxcalculate(_findTableCart)
-        setMainfilterditemcartTable(_findTableCart)
+        setIsLoading(true)
+        try {
+            let _findTableCart = await state?.cart_data?.find(item => item?.table_number === route?.params?.table_details?.table_number)
+            if (_findTableCart) {
+                await _restructure_dishData(_findTableCart)
+                await taxcalculate(_findTableCart)
+                setMainfilterditemcartTable(_findTableCart)
+            }
+        } catch (error) {
+            console.log(error, 'initialiseCartTableData error')
+        } finally {
+            setIsLoading(false)
+        }
     }
 
 
     async function fetchOrderDetails(_ORDERID) {
+        setIsLoading(true)
         let _usertoken = await _retrieveStoreData('_waiter_token')
 
         await apiRequest('waiter/order-view', 'post', {
@@ -86,6 +98,10 @@ const TableDetails = ({ route }) => {
             await _restructure_dishData(_orderDetails)
             await taxcalculate(_orderDetails)
             console.log(result, 'order details respnse?????????????????')
+            setIsLoading(false)
+        }).catch((error) => {
+            console.log(error, 'fetch order details error')
+            setIsLoading(false)
         })
     }
     useEffect(() => {
@@ -579,13 +595,9 @@ const TableDetails = ({ route }) => {
         <View style={{ flex: 1 }}>
             <Header inhome={false} page={route?.params?.order_details?.type != undefined ? 'Order Details' : "Table Details"} />
             {
-                destructureTableResponse?.length == 0 ? <>
-                    <ActivityIndicator
-                        color='#000000'
-                        size={30}
-                    />
-                </>
-                    : (
+                isLoading || destructureTableResponse?.length == 0 ? (
+                    <TableDetailsSkeleton />
+                ) : (
                         <>
                             <ScrollView style={tableDetailstyles.tableWrapper}>
                                 <View style={tableDetailstyles.tableBox}>
