@@ -9,6 +9,14 @@ export const addFoodStyles = StyleSheet.create({
         // backgroundColor: "#000000B2",
         // zIndex: 1
     },
+    descriptionSkeleton: {
+        width: 120,
+        height: 14,
+        backgroundColor: '#eee',
+        borderRadius: 4,
+        flexShrink: 1,
+        maxWidth: '100%',
+    },
     addbox: {
         width: "85%",
         paddingHorizontal: 14,

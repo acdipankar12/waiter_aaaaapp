@@ -80,7 +80,16 @@ const ForgetEmail = () => {
                                 }]}
                                 placeholderTextColor={"#888"}
                                 placeholder='Email'
-                                onChangeText={(text) => setEmail(text)}
+                                // onChangeText={(text) => setEmail(text)}
+                                 onChangeText={(t) => {
+                                    if (t.length > 0) {
+                                        const firstChar = t.charAt(0).toLowerCase();
+                                        const rest = t.slice(1);
+                                        setEmail( firstChar + rest);
+                                    } else {
+                                        setEmail( t);
+                                    }
+                                }}
                                 // value={email}
                                 keyboardType='email-address'
                                 autoCapitalize='none'

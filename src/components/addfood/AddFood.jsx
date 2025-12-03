@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, TextInput } from 'react-native'
-import React, { useContext, useEffect, useState, forwardRef, useImperativeHandle } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Dimensions, Animated } from 'react-native'
+import React, { useContext, useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react'
 import { addFoodStyles } from './styles'
 // import Toast from 'react-native-toast-message'
 import Toast from "react-native-simple-toast";
@@ -11,8 +11,9 @@ import IconFontisto from 'react-native-vector-icons/Fontisto'
 import { UserContext } from '../../context/UserContext'
 import { _removeStoreData, _retrieveStoreData, _setStoreData } from '../../utils/store'
 import { FullWindowOverlay } from 'react-native-screens'
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber, setselectedTablenumber }, ref) => {
+const AddFood = ({ setOpenModal, food, disloading, selectedPrice, selectedItemName, updateOptionData, selectedFood, table_modalopen, selectedTablenumber, setselectedTablenumber }, ref) => {
     const navigation = useNavigation()
     const [spiceLevel, setSpiceLevel] = useState(null); // "Mild", "Med", or "Hot"
     const [selectedRices, setSelectedRices] = useState([]); // array of strings
@@ -413,94 +414,159 @@ const AddFood = ({ setOpenModal, food, selectedPrice, selectedItemName, updateOp
         sanitize_dishData
     }), [food, selectedChoiceIds, selectedFood, selectedTablenumber])
 
+    const Shimmer = ({ style }) => {
+        const shimmerAnim = useRef(new Animated.Value(-1)).current;
+
+        useEffect(() => {
+            Animated.loop(
+                Animated.timing(shimmerAnim, {
+                    toValue: 1,
+                    duration: 1200,
+                    useNativeDriver: true,
+                })
+            ).start();
+        }, [shimmerAnim]);
+
+        const translateX = shimmerAnim.interpolate({
+            inputRange: [-1, 1],
+            outputRange: [-SCREEN_WIDTH, SCREEN_WIDTH],
+        });
+
+        return (
+            <View style={[style, { overflow: 'hidden' }]}>
+                <Animated.View
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        height: '100%',
+                        width: '100%',
+                        transform: [{ translateX }],
+                        backgroundColor: 'rgba(200,200,200,0.2)',
+                        opacity: 0.6,
+                    }}
+                />
+            </View>
+        );
+    };
+
     return (
+
         <View style={addFoodStyles.modalWrapper} key={selectedFood?.id}>
             <View style={addFoodStyles.addbox}>
-                <View style={addFoodStyles.head}>
-                    <Text style={addFoodStyles.headname}>{selectedItemName}</Text>
-                    <Text style={addFoodStyles.price}>{
-                        selectedPrice && !isNaN(Number(selectedPrice))
-                            ? `$${Number(selectedPrice).toFixed(2)}`
-                            : ''
-                    }</Text>
-                </View>
-                <View>
+                {
+                    disloading ? (
+                        <>
+                            <View style={addFoodStyles.descriptionSkeleton}>
+                                <Shimmer style={addFoodStyles.descriptionSkeleton} />
+                            </View>
+                            <View style={addFoodStyles.descriptionSkeleton}>
+                                <Shimmer style={addFoodStyles.descriptionSkeleton} />
+                            </View>
+                            <View style={addFoodStyles.descriptionSkeleton}>
+                                <Shimmer style={addFoodStyles.descriptionSkeleton} />
+                            </View>
+                            <View style={addFoodStyles.descriptionSkeleton}>
+                                <Shimmer style={addFoodStyles.descriptionSkeleton} />
+                            </View>
+                            <View style={addFoodStyles.descriptionSkeleton}>
+                                <Shimmer style={addFoodStyles.descriptionSkeleton} />
+                            </View>
+                        </>
+                    )
+                        :
+                        (
+                            <>
+                                <View style={addFoodStyles.head}>
+                                    <Text style={addFoodStyles.headname}>{selectedItemName}</Text>
+                                    <Text style={addFoodStyles.price}>{
+                                        selectedPrice && !isNaN(Number(selectedPrice))
+                                            ? `$${Number(selectedPrice).toFixed(2)}`
+                                            : ''
+                                    }</Text>
+                                </View>
+                                <View>
 
-                    {
-                        food?.length > 0 && food.map(element => {
-                            return (
-                                <>
-                                    <Text style={addFoodStyles.spicytext}>{element?.option_name}</Text>
-                                    <View style={{
-                                        width: '100%'
-                                    }}>
-                                        {
-                                            element?.choices?.length > 0 && element?.choices?.map((choiceItem, _index) => {
-                                                return (
-                                                    <>
-                                                        <View style={{
-                                                            width: '100%',
-                                                            justifyContent: 'space-between',
-                                                            flexDirection: 'row',
-                                                            margin: 0,
-                                                            padding: 0
-                                                        }}>
+                                    {
+                                        food?.length > 0 && food.map(element => {
+                                            return (
+                                                <>
+                                                    <Text style={addFoodStyles.spicytext}>{element?.option_name}</Text>
+                                                    <View style={{
+                                                        width: '100%'
+                                                    }}>
+                                                        {
+                                                            element?.choices?.length > 0 && element?.choices?.map((choiceItem, _index) => {
+                                                                return (
+                                                                    <>
+                                                                        <View style={{
+                                                                            width: '100%',
+                                                                            justifyContent: 'space-between',
+                                                                            flexDirection: 'row',
+                                                                            margin: 0,
+                                                                            padding: 0
+                                                                        }}>
 
-                                                            <View style={{
-                                                                alignItems: 'center',
-                                                                flexDirection: 'row'
-                                                            }}>
-                                                                {/* For type 1 show a tappable Fontisto checkbox (passive/active). For other types don't render this icon here. */}
-                                                                {Number(choiceItem?.type) === 1 ? (
-                                                                    <TouchableOpacity onPress={() => toggleChoiceSelect(choiceItem)}>
-                                                                        {selectedChoiceIds.includes(choiceItem?.id) ? (
-                                                                            <IconFontisto name="checkbox-active" size={16} color="#000" />
-                                                                        ) : (
-                                                                            <IconFontisto name="checkbox-passive" size={16} color="#000" />
-                                                                        )}
-                                                                    </TouchableOpacity>
-                                                                ) : null}
+                                                                            <View style={{
+                                                                                alignItems: 'center',
+                                                                                flexDirection: 'row'
+                                                                            }}>
+                                                                                {/* For type 1 show a tappable Fontisto checkbox (passive/active). For other types don't render this icon here. */}
+                                                                                {Number(choiceItem?.type) === 1 ? (
+                                                                                    <TouchableOpacity onPress={() => toggleChoiceSelect(choiceItem)}>
+                                                                                        {selectedChoiceIds.includes(choiceItem?.id) ? (
+                                                                                            <IconFontisto name="checkbox-active" size={16} color="#000" />
+                                                                                        ) : (
+                                                                                            <IconFontisto name="checkbox-passive" size={16} color="#000" />
+                                                                                        )}
+                                                                                    </TouchableOpacity>
+                                                                                ) : null}
 
-                                                                <Text style={addFoodStyles?.checkboxname2}> {choiceItem?.choice_name} {`($${choiceItem?.price})`}</Text>
+                                                                                <Text style={addFoodStyles?.checkboxname2}> {choiceItem?.choice_name} {`($${choiceItem?.price})`}</Text>
 
-                                                            </View>
+                                                                            </View>
 
-                                                            {/* Show increment controls only when this is a type-1 choice AND the user has selected (toggled) it. */}
-                                                            {Number(choiceItem?.type) === 1 && selectedChoiceIds.includes(choiceItem?.id) ? (
-                                                                <IncrementItem
-                                                                    item={choiceItem}
-                                                                    changeFunction={updateChoiceData}
-                                                                />
-                                                            ) : Number(choiceItem?.type) !== 1 ? (
-                                                                /* Non-type-1 items use the spicyCheckBox / radio-style UI. Pressing it will toggle selection similarly. */
-                                                                <View style={addFoodStyles.spicyCheckBox}>
-                                                                    <View key={_index} style={addFoodStyles.checkBoxitems}>
-                                                                        <TouchableOpacity
-                                                                            style={selectedChoiceIds.includes(choiceItem?.id) ? addFoodStyles.checkboxselect : addFoodStyles.checkbox}
-                                                                            onPress={() => toggleChoiceSelect(choiceItem)}
-                                                                        >
-                                                                            {selectedChoiceIds.includes(choiceItem?.id) && <IconAntDesign name="check" size={14} color="#fff" />}
-                                                                        </TouchableOpacity>
-                                                                    </View>
-                                                                </View>
-                                                            ) : (
-                                                                /* type 1 but not selected -> render nothing on the right */
-                                                                <View style={{ width: 70, height: 30 }} />
-                                                            )}
+                                                                            {/* Show increment controls only when this is a type-1 choice AND the user has selected (toggled) it. */}
+                                                                            {Number(choiceItem?.type) === 1 && selectedChoiceIds.includes(choiceItem?.id) ? (
+                                                                                <IncrementItem
+                                                                                    item={choiceItem}
+                                                                                    changeFunction={updateChoiceData}
+                                                                                />
+                                                                            ) : Number(choiceItem?.type) !== 1 ? (
+                                                                                /* Non-type-1 items use the spicyCheckBox / radio-style UI. Pressing it will toggle selection similarly. */
+                                                                                <View style={addFoodStyles.spicyCheckBox}>
+                                                                                    <View key={_index} style={addFoodStyles.checkBoxitems}>
+                                                                                        <TouchableOpacity
+                                                                                            style={selectedChoiceIds.includes(choiceItem?.id) ? addFoodStyles.checkboxselect : addFoodStyles.checkbox}
+                                                                                            onPress={() => toggleChoiceSelect(choiceItem)}
+                                                                                        >
+                                                                                            {selectedChoiceIds.includes(choiceItem?.id) && <IconAntDesign name="check" size={14} color="#fff" />}
+                                                                                        </TouchableOpacity>
+                                                                                    </View>
+                                                                                </View>
+                                                                            ) : (
+                                                                                /* type 1 but not selected -> render nothing on the right */
+                                                                                <View style={{ width: 70, height: 30 }} />
+                                                                            )}
 
-                                                        </View>
-                                                    </>
-                                                )
-                                            })
-                                        }
-                                        {/* <Text> {ele}</Text> */}
-                                    </View>
+                                                                        </View>
+                                                                    </>
+                                                                )
+                                                            })
+                                                        }
+                                                        {/* <Text> {ele}</Text> */}
+                                                    </View>
 
-                                </>
-                            )
-                        })
-                    }
-                </View>
+                                                </>
+                                            )
+                                        })
+                                    }
+                                </View>
+                            </>
+                        )
+                }
+
+
                 {/* <Text style={addFoodStyles.spicytext}>How Spicy?</Text>
                 <View style={addFoodStyles.spicyCheckBox}>
                     {['Mild', 'Med', 'Hot'].map((level) => (

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, SafeAreaView, StatusBar, SectionList, Image } from 'react-native'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState, useTransition } from 'react'
 import { ScrollView } from 'react-native'
 import Header from '../../components/header/Header'
 import { homeStyles } from './styles'
@@ -52,7 +52,7 @@ const Home = () => {
 
     const [optionData, setOptionData] = useState([])
     const [dishesListData, setDishListData] = useState([])
-
+ const [dishloading , setDishloading] =  useState(false)
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
 
@@ -63,12 +63,6 @@ const Home = () => {
     const [selectedTablenumber, setselectedTablenumber] = useState(0)
     // ref to access AddFood's imperative handle (exposed sanitize function)
     const addFoodRef = useRef(null)
-
-    // Pagination state
-    const [pageNo, setPageNo] = useState(1)
-    const [perPage, setPerPage] = useState(10)
-    const [hasMore, setHasMore] = useState(true)
-    const [isLoadingMore, setIsLoadingMore] = useState(false)
     const AddFoodModal = async (f) => {
         console.log("Add Food Modal")
         // open modal immediately so UI isn't blocked by the network request
@@ -175,7 +169,7 @@ const Home = () => {
                             : []
                     setChildrenStack([])
                     setCurrentChildren(children)
-                    await fetchsubCategoryData(firstCat.id, _userData?.business, debouncedSearchTerm, 1, false)
+                    await fetchsubCategoryData(firstCat.id, _userData?.business, debouncedSearchTerm)
 
                     const obj = firstCat?.name ? JSON.parse(firstCat.name) : {}
                     const firstValue = obj[Object.keys(obj)[0]]
@@ -199,16 +193,12 @@ const Home = () => {
         retrive_savecart()
     }, [])
     // fetch  subcategory list data
-    async function fetchsubCategoryData(cat_id, business_id, search_keyword = '', page = 1, isLoadMore = false) {
-        if (isLoadMore) {
-            setIsLoadingMore(true)
-        } else {
-            setloading(true)
-            setSubcategorylistData([])
-            setDishListData([])
-            setPageNo(1)
-            setHasMore(true)
-        }
+    async function fetchsubCategoryData(cat_id, business_id, search_keyword = '') {
+          setDishloading(true)
+
+        setloading(true)
+        setSubcategorylistData([])
+        setDishListData([])
         console.log('api der')
 
         let _usertoken = await _retrieveStoreData('_waiter_token')
@@ -219,9 +209,7 @@ const Home = () => {
                 lang_id: '1',
                 type: '2',
                 business_id: business_id,
-                search_keyword: search_keyword ?? '',
-                pageNo: page,
-                perPage: perPage
+                search_keyword: search_keyword ?? ''
 
             }, {
                 "Content-Type": "application/json",
@@ -234,42 +222,23 @@ const Home = () => {
             if (api_res?.status == true) {
                 // if (typeof api_res?.data == 'undefined') {
                 console.log(api_res?.data, 'sub catetlfkdf')
+                setDishListData(api_res?.data)
+                setDishloading(false)
 
-                if (isLoadMore) {
-                    // Append new data to existing list
-                    setDishListData(prevData => [...prevData, ...(api_res?.data || [])])
-                } else {
-                    // Replace data for initial load
-                    setDishListData(api_res?.data || [])
-                }
-
-                // Check if there are more pages to load
-                const fetchedData = api_res?.data || []
-                if (fetchedData.length < perPage) {
-                    setHasMore(false)
-                } else {
-                    setHasMore(true)
-                }
                 // }
             }
             // console.log()
             setloading(false)
-            setIsLoadingMore(false)
         } catch (error) {
+             setDishloading(false)
+
             console.log('catch error ', error)
-            setloading(false)
-            setIsLoadingMore(false)
         }
     }
 
     useEffect(() => {
         // Whenever `selected` or debounced search changes, fetch dishes for that category/subcategory
-        // Reset pagination when category or search changes
-        if (selected?.id) {
-            setPageNo(1)
-            setHasMore(true)
-            fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, 1, false)
-        }
+        if (selected?.id) fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm)
     }, [selected, debouncedSearchTerm])
 
     // debounce search term to avoid spamming API
@@ -312,15 +281,6 @@ const Home = () => {
     // check box update data
     const selectCheckboxData = () => {
 
-    }
-
-    // Load more dishes when reaching end of list
-    const loadMoreDishes = async () => {
-        if (!isLoadingMore && hasMore && selected?.id && !loading) {
-            const nextPage = pageNo + 1
-            setPageNo(nextPage)
-            await fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, nextPage, true)
-        }
     }
     return (
         <>
@@ -395,8 +355,7 @@ const Home = () => {
                             keyExtractor={(item) => item?.id?.toString()}
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{
-                                paddingBottom: 15,
-                                // marginVertical:15
+                                paddingBottom: 10,
                                 // flexGrow:1
                                 // paddingVertical:20
                                 // backgroundColor:'red'
@@ -405,8 +364,9 @@ const Home = () => {
                     )}
 
                     <View style={{
-                        // marginTop: 8,
-                        // backgroundColor:'green'
+                        marginTop: 8,
+                        // backgroundColor:'green',
+                        // position:'relative' 
                     }}>
                         {
                             !categoriesLoaDING && (
@@ -546,83 +506,66 @@ const Home = () => {
                         !loading && (
                             <>
 
+                                <>
+                                    <FlatList
+                                        // horizontal
+                                        // ref={flatListRef}
+                                        data={dishesListData}
+                                        renderItem={({ item }) => (
 
-
-                                <FlatList
-                                    // horizontal
-                                    // ref={flatListRef}
-                                    data={dishesListData}
-                                    renderItem={({ item }) => (
-
-                                        <FoodCard
-                                            key={item.id}
-                                            onPress={() => AddFoodModal(item)}
-                                            food={item}
-                                        />
-                                    )}
-                                    keyExtractor={(item) => item?.id?.toString()}
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={[
-                                        homeStyles.foodSection,
-                                        {
-                                            paddingBottom: 130,
-                                            // paddingTop:20
-                                            // backgroundColor
-                                        }
-                                    ]}
-                                    style={{
-                                        paddingTop: 20,
-                                        // backgroundColor: 'red'
-                                    }}
-                                    onEndReached={loadMoreDishes}
-                                    onEndReachedThreshold={0.5}
-                                    ListFooterComponent={() => {
-                                        if (isLoadingMore) {
+                                            <FoodCard
+                                                key={item.id}
+                                                onPress={() => AddFoodModal(item)}
+                                                food={item}
+                                            />
+                                        )}
+                                        keyExtractor={(item) => item?.id?.toString()}
+                                        showsHorizontalScrollIndicator={false}
+                                        contentContainerStyle={[
+                                            homeStyles.foodSection,
+                                            {
+                                                paddingBottom: 130,
+                                                // paddingTop:10
+                                                // backgroundColor
+                                            }
+                                        ]}
+                                        ListEmptyComponent={() => {
                                             return (
-                                                <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                                                    <Text>Loading more...</Text>
-                                                </View>
+                                                <>
+                                                    {
+                                                        !categoriesLoaDING && (
+                                                            <View style={{
+                                                                // justifyContent:'center',
+                                                                alignItems: 'center',
+                                                                height: '100%'
+                                                            }}>
+
+                                                                <Image
+                                                                    source={require('../../../assets/emptydish.jpg')}
+                                                                    style={{
+                                                                        width: 120,
+                                                                        height: 110,
+                                                                        marginTop: 70
+                                                                    }}
+                                                                    resizeMethod='auto'
+                                                                    resizeMode='contain'
+                                                                />
+                                                                <Text style={{
+                                                                    fontSize: 19,
+                                                                    color: '#000000',
+                                                                    fontWeight: '600'
+                                                                }}> No Dish Found !</Text>
+                                                            </View>
+                                                        )
+                                                    }
+
+                                                </>
                                             )
-                                        }
-                                        return null
-                                    }}
-                                    ListEmptyComponent={() => {
-                                        return (
-                                            <>
-                                                {
-                                                    !categoriesLoaDING && (
-                                                        <View style={{
-                                                            // justifyContent:'center',
-                                                            alignItems: 'center',
-                                                            height: '100%'
-                                                        }}>
 
-                                                            <Image
-                                                                source={require('../../../assets/emptydish.jpg')}
-                                                                style={{
-                                                                    width: 120,
-                                                                    height: 110,
-                                                                    marginTop: 70
-                                                                }}
-                                                                resizeMethod='auto'
-                                                                resizeMode='contain'
-                                                            />
-                                                            <Text style={{
-                                                                fontSize: 19,
-                                                                color: '#000000',
-                                                                fontWeight: '600'
-                                                            }}> No Dish Found !</Text>
-                                                        </View>
-                                                    )
-                                                }
+                                        }}
 
-                                            </>
-                                        )
-
-                                    }}
-
-                                />
-
+                                    />
+                                </>
 
 
                             </>
@@ -649,6 +592,7 @@ const Home = () => {
                         table_modalopen={setOpenModaltable}
                         selectedTablenumber={selectedTablenumber}
                         setselectedTablenumber={setselectedTablenumber}
+                        disloading={dishloading}
 
                     />
                 </Modal>

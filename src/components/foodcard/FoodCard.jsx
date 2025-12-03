@@ -58,9 +58,9 @@ const FoodCard = ({ onPress, food }) => {
                     // backgroundColor:'green'
                 }}>
                     <View style={[styles.actions]}>
-                        <TouchableOpacity style={styles.iconButton}>
+                        {/* <TouchableOpacity style={styles.iconButton}>
                             <AntDesignIcon name="appstore1" size={16} color="#fff" style={styles.ico1} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity onPress={onPress} style={styles.addButton}>
                             <FeatherIcon name="plus" size={16} color="#fff" style={styles.ico2} onPress={onPress} />
                         </TouchableOpacity>

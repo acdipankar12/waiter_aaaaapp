@@ -197,14 +197,18 @@ const OrderList = () => {
                                     ) : null
                                 }
                                 ListEmptyComponent={() => {
-                                    <View>
-                                        <Text style={{
-                                            fontSize: 25,
-                                            color: '#000000',
-                                            fontWeight: '600'
-                                        }}> No Dish Found !</Text>
-                                    </View>
+                                    return (
+                                        <View style={{
+                                            alignItems: 'center',
+                                            marginTop: 50
+                                        }}>
+
+                                            <Text style={{ fontFamily: "Jost_600SemiBold", fontSize: 16, textAlign: "center" }}>No booking has been completed yet.</Text>
+                                        </View>
+                                    )
                                 }}
+
+
 
                             />
 
