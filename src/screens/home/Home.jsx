@@ -22,6 +22,7 @@ import CategoriesSkeleton from '../../components/categories/CategoriesSkelatomn'
 import Modal from "react-native-modal";
 import SubCategories from '../../components/categories/subCategory'
 import { useNavigation } from '@react-navigation/native'
+const PER_PAGE = 10
 
 const Home = () => {
     const [openModal, setOpenModal] = useState(false)
@@ -52,13 +53,18 @@ const Home = () => {
 
     const [optionData, setOptionData] = useState([])
     const [dishesListData, setDishListData] = useState([])
- const [dishloading , setDishloading] =  useState(false)
+    const [dishloading, setDishloading] = useState(false)
     const [selectedCateActive, setSelectedCategoryactive] = useState([])
     const [checkboxIdData, setCheckboxidData] = useState([])
 
     // search state
     const [searchTerm, setSearchTerm] = useState('')
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
+
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [refreshing, setRefreshing] = useState(false)
+    const [pageNo, setPageNo] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
 
     const [selectedTablenumber, setselectedTablenumber] = useState(0)
     // ref to access AddFood's imperative handle (exposed sanitize function)
@@ -193,10 +199,18 @@ const Home = () => {
         retrive_savecart()
     }, [])
     // fetch  subcategory list data
-    async function fetchsubCategoryData(cat_id, business_id, search_keyword = '') {
-          setDishloading(true)
+    async function fetchsubCategoryData(cat_id, business_id, search_keyword = '', page = 1, append = false, showLoader = true) {
+        setDishloading(true)
 
         setloading(true)
+        ///
+        if (append) {
+            setLoadingMore(true)
+        } else if (showLoader) {
+            setDishloading(true)
+        }
+
+        //
         setSubcategorylistData([])
         setDishListData([])
         console.log('api der')
@@ -209,7 +223,9 @@ const Home = () => {
                 lang_id: '1',
                 type: '2',
                 business_id: business_id,
-                search_keyword: search_keyword ?? ''
+                search_keyword: search_keyword ?? '',
+                perPage: PER_PAGE,
+                pageNo: page
 
             }, {
                 "Content-Type": "application/json",
@@ -218,11 +234,16 @@ const Home = () => {
             })
 
 
-            console.log(api_res, 'item data////////////////////')
+
             if (api_res?.status == true) {
+                const incomingOrders = Array.isArray(api_res?.data) ? api_res?.data : []
+                setDishListData(prev => append ? [...prev, ...incomingOrders] : incomingOrders)
+                setPageNo(page)
+                setHasMore(incomingOrders.length === PER_PAGE)
+
                 // if (typeof api_res?.data == 'undefined') {
                 console.log(api_res?.data, 'sub catetlfkdf')
-                setDishListData(api_res?.data)
+                // setDishListData([...api_res?.data, {}, {}])
                 setDishloading(false)
 
                 // }
@@ -230,9 +251,15 @@ const Home = () => {
             // console.log()
             setloading(false)
         } catch (error) {
-             setDishloading(false)
+            setDishloading(false)
 
             console.log('catch error ', error)
+        } finally {
+            if (append) {
+                setLoadingMore(false)
+            } else if (showLoader) {
+                setDishloading(false)
+            }
         }
     }
 
@@ -282,6 +309,22 @@ const Home = () => {
     const selectCheckboxData = () => {
 
     }
+
+    // paginatin product list 
+    const handleLoadMore = () => {
+        if (loadingMore || !hasMore) {
+            return
+        }
+
+        fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, pageNo + 1, true)
+    }
+
+    const handleRefresh = () => {
+        setRefreshing(true)
+        setHasMore(true)
+        fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, 1, false, false).finally(() => setRefreshing(false))
+    }
+
     return (
         <>
 
@@ -300,6 +343,7 @@ const Home = () => {
                 paddingTop: StatusBar?.currentHeight - StatusBar.currentHeight * .50
 
             }}>
+
 
                 <Header
                     inhome={true}
@@ -356,6 +400,7 @@ const Home = () => {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={{
                                 paddingBottom: 10,
+                                // backgroundColor: 'green'
                                 // flexGrow:1
                                 // paddingVertical:20
                                 // backgroundColor:'red'
@@ -363,7 +408,7 @@ const Home = () => {
                         />
                     )}
 
-                    <View style={{
+                     <View style={{
                         marginTop: 8,
                         // backgroundColor:'green',
                         // position:'relative' 
@@ -431,7 +476,7 @@ const Home = () => {
                                 />
                             )
                         }
-                    </View>
+                    </View> 
                     {/* {
                         foodsdata?.map((food) => (
                             <View key={food?.id} style={homeStyles.foodSection}>
@@ -521,11 +566,13 @@ const Home = () => {
                                         )}
                                         keyExtractor={(item) => item?.id?.toString()}
                                         showsHorizontalScrollIndicator={false}
+                                        showsVerticalScrollIndicator={false}
                                         contentContainerStyle={[
                                             homeStyles.foodSection,
                                             {
                                                 paddingBottom: 130,
-                                                // paddingTop:10
+                                                // backgroundColor: 'red',
+                                                paddingTop: 10
                                                 // backgroundColor
                                             }
                                         ]}
@@ -563,6 +610,13 @@ const Home = () => {
                                             )
 
                                         }}
+                                        // style={{
+                                        //     flexGrow: 0
+                                        // }}
+                                        onEndReached={() => { handleLoadMore() }}
+                                        onEndReachedThreshold={0.2}
+                                        refreshing={refreshing}
+                                        onRefresh={() => { handleRefresh() }}
 
                                     />
                                 </>
