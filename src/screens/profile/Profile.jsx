@@ -9,10 +9,11 @@ import { useNavigation } from '@react-navigation/native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import { UserContext } from '../../context/UserContext'
-import Toast from 'react-native-toast-message'
+// import Toast from 'react-native-toast-message'
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { apiRequest } from '../../utils/apiService'
 import { _retrieveStoreData } from '../../utils/store'
+import Toast from "react-native-simple-toast";
 
 const Profile = () => {
     const [secure, setSecure] = useState(true)
@@ -22,7 +23,7 @@ const Profile = () => {
     const [loading, setloading] = useState(false)
     const [profileData, setProfileData] = useState({
 
-        name:'',
+        name: '',
         last_name: '',
         email: '',
         cel: '',
@@ -103,7 +104,7 @@ const Profile = () => {
         formData.append('image', profileData?.image?.uri)
 
 
-        console.log(formData ,'form dartata>>>>>')
+        console.log(formData, 'form dartata>>>>>')
 
         await apiRequest('waiter/update-profile', 'post', formData, {
             "Content-Type": "multipart/form-data",
@@ -111,6 +112,13 @@ const Profile = () => {
             'Authorization': `Bearer ${_usertoken}`
         }).then((res) => {
             setloading(false)
+              if (res?.status == true) {
+                Toast.show('Profile updated successfully', Toast.SHORT, Toast.BOTTOM);
+
+            } else {
+                Toast.show('Something went wrong', Toast.SHORT, Toast.BOTTOM);
+
+            }
             console.log(res, 'update proile respone../?????')
         })
 
@@ -132,6 +140,7 @@ const Profile = () => {
                 password: '',
                 image: null,
             })
+          
             console.log(res, 'profile response')
         })
     }
@@ -150,7 +159,7 @@ const Profile = () => {
                 <View style={profilestyles.imagewrap}>
                     {
                         typeof profileData?.image == 'object' && (
-                            <Image source={ user } style={profilestyles.image}></Image>
+                            <Image source={user} style={profilestyles.image}></Image>
 
                         )
 
@@ -177,7 +186,8 @@ const Profile = () => {
                                 ...profileData,
                                 name: T
                             })}
-                            placeholderTextColor={"#b8b8b8"} placeholder='First Name' style={profilestyles.inputtext}></TextInput>
+                            placeholderTextColor={"#b8b8b8"} placeholder='First Name'
+                            style={profilestyles.inputtext}></TextInput>
                     </TouchableOpacity>
                     <TouchableOpacity style={profilestyles.input}>
                         <TextInput
@@ -206,7 +216,7 @@ const Profile = () => {
                             })}
                             placeholderTextColor={"#b8b8b8"} placeholder='Email' style={profilestyles.inputtext}></TextInput>
                     </TouchableOpacity>
-                    <TouchableOpacity style={profilestyles.input}>
+                    {/* <TouchableOpacity style={profilestyles.input}>
                         <TextInput
                             placeholderTextColor={"#b8b8b8"} placeholder='Password'
                             style={profilestyles.inputtext2}
@@ -221,12 +231,12 @@ const Profile = () => {
                             secure ? <FeatherIcon onPress={() => setSecure(!secure)} style={profilestyles.eye} name="eye-off" size={16} color="#b8b8b8" /> : <FeatherIcon onPress={() => setSecure(!secure)} style={profilestyles.eye} name="eye" size={16} color="#b8b8b8" />
                         }
 
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
                 <View style={profilestyles.buttsec}>
-                    <TouchableOpacity 
-                    onPress={() => navigation.goBack()}
-                    style={profilestyles.butt1}>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={profilestyles.butt1}>
                         <Text style={{ fontSize: 15, fontFamily: "Jost_500Medium" }}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={profilestyles.butt2}

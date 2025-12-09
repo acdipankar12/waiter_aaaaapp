@@ -237,7 +237,7 @@ const Home = () => {
 
             if (api_res?.status == true) {
                 const incomingOrders = Array.isArray(api_res?.data) ? api_res?.data : []
-                setDishListData(prev => append ? [...prev, ...incomingOrders] : incomingOrders)
+                setDishListData(prev => append ? [...prev, ...incomingOrders ] : incomingOrders)
                 setPageNo(page)
                 setHasMore(incomingOrders.length === PER_PAGE)
 
@@ -339,10 +339,12 @@ const Home = () => {
 
             {/* <ScrollView style={{ flex: 1, paddingBottom: 70, backgroundColor: "#fff", }}> */}
             <SafeAreaView style={{
-                flex: 1, paddingBottom: 70, backgroundColor: "#fff",
-                paddingTop: StatusBar?.currentHeight - StatusBar.currentHeight * .50
+                flex: 1, backgroundColor: "#fff",
+                paddingTop: StatusBar?.currentHeight - StatusBar.currentHeight * .60
 
             }}>
+                
+
 
 
                 <Header
@@ -350,7 +352,7 @@ const Home = () => {
                     searchValue={searchTerm}
                     onSearchChange={setSearchTerm}
                 />
-                <View style={{ paddingHorizontal: 20, marginBottom: 70 }}>
+                <View style={{ paddingHorizontal: 20 }}>
                     {categoriesLoaDING ? (
                         <FlatList
                             horizontal
@@ -570,10 +572,12 @@ const Home = () => {
                                         contentContainerStyle={[
                                             homeStyles.foodSection,
                                             {
-                                                paddingBottom: 130,
+                                                paddingBottom: 240,
                                                 // backgroundColor: 'red',
                                                 paddingTop: 10
+
                                                 // backgroundColor
+
                                             }
                                         ]}
                                         ListEmptyComponent={() => {
@@ -617,7 +621,10 @@ const Home = () => {
                                         onEndReachedThreshold={0.2}
                                         refreshing={refreshing}
                                         onRefresh={() => { handleRefresh() }}
-
+  
+                                        style={{
+                                            // marginTop:20
+                                        }}
                                     />
                                 </>
 

@@ -73,7 +73,8 @@ export const profilestyles = StyleSheet.create({
         color: "#B8B8B8",
         fontFamily: "Jost-Regular",
         fontSize: 16,
-        fontWeight:'400'
+        fontWeight:'400',
+        width:'100%'
     },
     inputtext2: {
         color: "#B8B8B8",

@@ -15,7 +15,7 @@ const Categories = ({ item, isSelected, onPress }) => {
                 alignItems: 'center'
             }]}
         >
-            <Text style={[styles.pillText, isSelected && styles.selectedText]}>
+            <Text style={[styles.pillText, isSelected && styles.selectedText , {fontSize:12}]}>
                 {firstValue}
             </Text>
           

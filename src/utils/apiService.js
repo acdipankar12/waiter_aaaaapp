@@ -11,6 +11,7 @@ const BASE_URL = 'https://menuhuts-admin.acuitysoftware.co.in/api/';
  * @returns {Promise<object>} - The API response.
  */
 export async function apiRequest(endpoint, method = 'get', data = {}, headers = {}) {
+  console.log(data, 'api service data....');
   try {
     const response = await axios({
       url: `${BASE_URL}${endpoint}`,

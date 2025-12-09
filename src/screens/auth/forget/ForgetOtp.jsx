@@ -103,7 +103,9 @@ const ForgetOtp = ({ navigation, route }) => {
                 // })
 
                 setloading(false)
-                navigation.navigate("forget-otp-new")
+                navigation.navigate("forget-otp-new" ,{
+                    user:user
+                })
             }
             // console.log("Login Response", response);
             // Handle successful login
@@ -146,9 +148,9 @@ const ForgetOtp = ({ navigation, route }) => {
                 </View>
                 <Text style={forgetOtpStyles.resendtext}>Didn't recieve code? {' '}
                     {timer === 0 ? (
-                        <Text style={{ color: 'grey' }} onPress={handleResend}>Resend again</Text>
+                        <Text style={forgetOtpStyles.resendtext} onPress={handleResend}>Resend again</Text>
                     ) : (
-                        <Text style={{ color: 'grey' }}>Resend again ({timer}s)</Text>
+                        <Text style={forgetOtpStyles.resendtext}>Resend again ({timer}s)</Text>
                     )}
                 </Text>
                 <TouchableOpacity

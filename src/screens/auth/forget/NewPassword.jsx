@@ -10,15 +10,18 @@ import Toast from "react-native-simple-toast";
 
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { apiRequest } from '../../../utils/apiService'
-const NewPassword = () => {
+const NewPassword = ({ navigation, route }) => {
+    const { user } = route.params
+
     const [secured, setSecured] = useState(false)
     const [secured2, setSecured2] = useState(false)
-
+    const [secured3, setSecured3] = useState(false)
     const [field_data, setfield_data] = useState({
         old_password: '',
         password: '',
         password_confirmation: ''
     })
+
 
     const [loading, setloading] = useState(false)
     const saveNewPassword = () => {
@@ -48,7 +51,7 @@ const NewPassword = () => {
         }
 
         if (password !== password_confirmation) {
-               Toast.show('Passwords do not match.', Toast.SHORT, Toast.BOTTOM);
+            Toast.show('Passwords do not match.', Toast.SHORT, Toast.BOTTOM);
             // Toast.show({
             //     type: "error",
             //     text1: "Passwords do not match"
@@ -60,7 +63,7 @@ const NewPassword = () => {
         const hasUppercase = /[A-Z]/.test(password);
         const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
         if (!hasUppercase && !hasSpecialChar) {
-              Toast.show('Password must have at least one uppercase letter or special character.', Toast.SHORT, Toast.BOTTOM);
+            Toast.show('Password must have at least one uppercase letter or special character.', Toast.SHORT, Toast.BOTTOM);
             // Toast.show({
             //     type: "error",
             //     text1: "Password must have at least one uppercase letter or special character"
@@ -71,11 +74,21 @@ const NewPassword = () => {
         // let passwordBorder = login_cre.password.trim() === '' ? 'red' : '';
 
         if (isvalid) {
-            console.log('data', field_data)
-            await apiRequest('user/change-password', 'post', JSON.stringify(field_data)).then(async (response) => {
+            console.log('data', {
+                user: user,
+                password: password,
+                password_confirmation: password_confirmation
+            })
+            let _paylaodData = {
+                user: user,
+                password: password,
+                password_confirmation: password_confirmation
+            }
+
+            await apiRequest('reset-password', 'post', _paylaodData).then(async (response) => {
                 console.log("Forget Response", response);
-                if (response.status == false) {
-                       Toast.show( response.message, Toast.SHORT, Toast.BOTTOM);
+                if (response.success == false) {
+                    Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
                     // Toast.show({
                     //     type: 'error',
                     //     text1: response.message
@@ -83,7 +96,7 @@ const NewPassword = () => {
                     setloading(false)
                 } else if (response.success == true) {
                     console.log("Forget Response>>>>>.", response);
-                  Toast.show( response.message, Toast.SHORT, Toast.BOTTOM);
+                    Toast.show(response.message, Toast.SHORT, Toast.BOTTOM);
                     // Toast.show({
                     //     type: 'success',
                     //     text1: response.message
@@ -94,7 +107,7 @@ const NewPassword = () => {
                     //     user: response?.user
                     // });
                     setloading(false)
-                    // navigation.navigate("home")
+                    navigation.navigate("login")
                 }
                 // console.log("Login Response", response);
                 // Handle successful login
@@ -130,7 +143,7 @@ const NewPassword = () => {
                             <Ionicons
                                 style={forgetNewStyles.view}
                                 name={secured ? "eye" : "eye-off"}
-                                size={16}
+                                size={18}
                                 color="#888"
                                 onPress={() => setSecured(!secured)}
                             />
@@ -143,7 +156,7 @@ const NewPassword = () => {
                                 style={[forgetNewStyles.input, {
                                     // width:'100%'
                                 }]}
-                                secureTextEntry={secured ? false : true}
+                                secureTextEntry={secured3 ? false : true}
                                 value={field_data?.password}
                                 onChangeText={(t) => setfield_data({
                                     ...field_data,
@@ -153,10 +166,10 @@ const NewPassword = () => {
                             ></TextInput>
                             <Ionicons
                                 style={forgetNewStyles.view}
-                                name={secured ? "eye" : "eye-off"}
-                                size={16}
+                                name={secured3 ? "eye" : "eye-off"}
+                                size={18}
                                 color="#888"
-                                onPress={() => setSecured(!secured)}
+                                onPress={() => setSecured3(!secured3)}
                             />
 
                         </TouchableOpacity>
@@ -166,7 +179,7 @@ const NewPassword = () => {
                                 placeholder='Confirm Password'
                                 style={forgetNewStyles.input}
                                 secureTextEntry={secured2 ? false : true}
-                                value={field_data?.password_confirmation}
+                                value={dfield_data?.password_confirmation}
                                 onChangeText={(t) => setfield_data({
                                     ...field_data,
                                     password_confirmation: t
@@ -175,7 +188,7 @@ const NewPassword = () => {
                             <Ionicons
                                 style={forgetNewStyles.view}
                                 name={secured2 ? "eye" : "eye-off"}
-                                size={16}
+                                size={18}
                                 color="#888"
                                 onPress={() => setSecured2(!secured2)}
                             />
