@@ -277,7 +277,7 @@ const Home = () => {
         return () => clearTimeout(timer)
     }, [searchTerm])
 
-    const handleBack = () => {
+    const handlebbBack = () => {
         if (childrenStack.length > 0) {
             const prev = childrenStack[childrenStack.length - 1]
             setChildrenStack(prevStack => prevStack.slice(0, -1))
@@ -316,13 +316,13 @@ const Home = () => {
             return
         }
 
-        fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, pageNo + 1, true)
+        fetchsubCategoryData(selected?.id, state?.user_data?.business, debouncedSearchTerm, pageNo + 1, true)
     }
 
     const handleRefresh = () => {
         setRefreshing(true)
         setHasMore(true)
-        fetchsubCategoryData(selected.id, state?.user_data?.business, debouncedSearchTerm, 1, false, false).finally(() => setRefreshing(false))
+        fetchsubCategoryData(selected?.id, state?.user_data?.business, debouncedSearchTerm, 1, false, false).finally(() => setRefreshing(false))
     }
 
     return (

@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const BASE_URL = 'https://menuhuts-admin.acuitysoftware.co.in/api/';
+const BASE_URL = 'https://staging-api.nexordr.com/api/';
 
 /**
  * Makes an API request to the specified endpoint with the given method and data.
